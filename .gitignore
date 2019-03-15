@@ -1,0 +1,28 @@
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Intellij
+.idea/
+*.iml
+*.iws
+
+# Mac
+.DS_Store
+
+# Maven
+log/
+target/
+
+# Test
+out/
+
+# Release
+CloudGuard
+CloudGuard.zip
+NET.config
+certs
+SERVER-LOG
+TrustWorthyStore.jts
+

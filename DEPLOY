@@ -1,0 +1,87 @@
+#!/bin/bash
+
+# clear the screen first
+clear
+sudo apt-get update
+sudo apt install openjdk-11-jre-headless
+sudo apt install zip
+#check for the depencies, go from apache to Maven to MySQL
+echo "Checking for software dependency"
+echo -n "   Apache2 : "
+RESPONSE=$(dpkg-query -W -f='${Status}\n' apache2)
+if [ ${#RESPONSE} = 0 ]; then
+        sudo apt install apache2
+else
+        echo $RESPONSE
+fi
+echo -n "   Maven : "
+RESPONSE=$(dpkg-query -W -f='${Status}\n' maven)
+if [ ${#RESPONSE} = 0 ]; then
+        sudo apt install maven
+else
+	echo $RESPONSE
+fi
+echo -n "   MySQL : "
+RESPONSE=$(dpkg-query -W -f='${Status}\n' mysql-server)
+if [ ${#RESPONSE} = 0 ]; then
+	sudo apt-get install mysql-server
+else
+	echo $RESPONSE
+fi
+
+
+# starts to configure the SQL Server
+clear
+echo ""
+echo ""
+read -p ">>> Please enter your intended MySQL password:" SQLPASS
+echo ""
+read -p "    For the following password, just type any 8 digits long symbols and enter (Press Enter to continue)" DUMP
+
+printf "n\ny\ny\ny\ny\n" | sudo mysql_secure_installation
+sudo mysql -uroot -e "USE mysql; UPDATE user SET plugin='mysql_native_password' WHERE User='root'; UPDATE mysql.user set authentication_string=PASSWORD('"$SQLPASS"') where user='root'; FLUSH PRIVILEGES; CREATE DATABASE USER_PARAM; USE USER_PARAM; CREATE TABLE user_info ( username VARCHAR(50) NOT NULL , pass CHAR(128) NOT NULL , pub VARCHAR(392) NOT NULL , priv VARCHAR(1624) NOT NULL , token CHAR(24) NOT NULL ); ALTER TABLE user_info ADD UNIQUE(username);"
+
+sudo service mysql restart
+
+
+#starts to configure the Keystore files
+rm -rf *.jts
+rm -rf *.jks
+rm -rf certs
+mkdir certs
+clear
+echo ""
+echo ""
+read -p ">>> Please enter a secure SSL Server Keystore password (minimum 6 digits): " KEYPASS
+echo ""
+REST="a\na\na\na\na\na\ny\n"
+NEWLINE="\n"
+CONFIRM="y\n"
+CLIENTPASS=$(date +%s%N | cut -b1-13)
+printf $KEYPASS$NEWLINE$KEYPASS$NEWLINE$REST | keytool -genkey -keyalg RSA -keysize 2048 -validity 360 -alias serverkey -keystore ServerKeyStore.jks
+printf $KEYPASS$NEWLINE | keytool -export -alias serverkey -keystore ServerKeyStore.jks -file certificate.cert
+printf $CLIENTPASS$NEWLINE$CLIENTPASS$NEWLINE$CONFIRM | keytool -import -file certificate.cert -alias serverkey -keystore TrustWorthyStore.jts
+echo $CLIENTPASS > ./certs/tmp.tmp
+mv certificate.cert ./certs
+mv ServerKeyStore.jks ./certs
+
+
+#Network Configfile and SERVER-LOG
+rm -rf SERVER-LOG
+mkdir SERVER-LOG
+echo ""
+read -p ">>> Please enter the URL of your sever, and make sure port 7729 is open for all trafic:" SERVER_URL
+echo $SERVER_URL > NET.config
+echo ""
+echo ""
+echo ""
+chmod +x FIRE
+chmod +x MAKE_CLIENT
+./MAKE_CLIENT
+sudo cp CloudGuard.zip /var/www/html/
+clear
+read -p "  You can now download the client application by going to this url : "$SERVER_URL"/CloudGuard.zip" TMP
+echo " ------- Server will starts in a short time  ------------"
+./FIRE
+
+

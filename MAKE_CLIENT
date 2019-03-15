@@ -1,0 +1,21 @@
+#!/bin/bash
+
+cd "$(dirname "$0")"
+mvn clean && mvn package
+
+rm -rf CloudGuard CloudGuard.zip
+
+mkdir CloudGuard
+mkdir CloudGuard/target
+mkdir CloudGuard/resources
+
+cp -r certs CloudGuard/
+cp -r NET.config CloudGuard/
+cp -r resources/Shield.jpeg CloudGuard/resources/
+cp -r resources/README.txt CloudGuard/resources/
+cp -r target/crypto-1.0-SNAPSHOT.jar CloudGuard/target
+cp -r TrustWorthyStore.jts CloudGuard/
+cp -r client_linux CloudGuard/
+
+zip -r CloudGuard.zip CloudGuard
+rm -rf CloudGuard
