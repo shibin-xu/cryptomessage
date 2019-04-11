@@ -5,6 +5,8 @@ clear
 sudo apt-get update
 sudo apt install openjdk-11-jre-headless
 sudo apt install zip
+sudo apt install openssl
+
 #check for the depencies, go from apache to Maven to MySQL
 echo "Checking for software dependency"
 echo -n "   Apache2 : "
@@ -22,6 +24,16 @@ else
 	echo $RESPONSE
 fi
 echo -n "   MySQL : "
+echo -n "You need to DELETE MySQL before proceeding."
+while true; do
+    read -p "Do you wish to DELETE MySQL? " yn
+    case $yn in
+        [Yy]* ) break;;
+        [Nn]* ) exit;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+sudo apt-get remove --purge mysql*
 RESPONSE=$(dpkg-query -W -f='${Status}\n' mysql-server)
 if [ ${#RESPONSE} = 0 ]; then
 	sudo apt-get install mysql-server
@@ -81,6 +93,7 @@ chmod +x MAKE_CLIENT
 sudo cp CloudGuard.zip /var/www/html/
 clear
 read -p "  You can now download the client application by going to this url : "$SERVER_URL"/CloudGuard.zip" TMP
+echo "  You can now download the client application by going to this url : "$SERVER_URL"/CloudGuard.zip" > DOWNLOAD
 echo " ------- Server will starts in a short time  ------------"
 ./FIRE
 

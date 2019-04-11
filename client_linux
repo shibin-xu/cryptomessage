@@ -1,5 +1,5 @@
 #!/bin/bash
 
 cd "$(dirname "$0")"
-java -cp target/crypto-1.0-SNAPSHOT.jar gui.Main
+java -cp target/ui-1.0-SNAPSHOT.jar org.cloudvault.ui.Main
 

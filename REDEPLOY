@@ -1,0 +1,9 @@
+#!/bin/bash
+
+./MAKE_CLIENT
+sudo cp CloudGuard.zip /var/www/html/
+clear
+cat DOWNLOAD
+read -p "" TMP
+echo " ------- Server will starts in a short time  ------------"
+./FIRE

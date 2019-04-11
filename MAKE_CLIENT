@@ -13,7 +13,8 @@ cp -r certs CloudGuard/
 cp -r NET.config CloudGuard/
 cp -r resources/Shield.jpeg CloudGuard/resources/
 cp -r resources/README.txt CloudGuard/resources/
-cp -r target/crypto-1.0-SNAPSHOT.jar CloudGuard/target
+cp -r ui/target/ui-1.0-SNAPSHOT.jar CloudGuard/target
+#cp -r target/crypto-1.0-SNAPSHOT.jar CloudGuard/target
 cp -r TrustWorthyStore.jts CloudGuard/
 cp -r client_linux CloudGuard/
 

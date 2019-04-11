@@ -1,1 +1,2 @@
-sudo java -cp target/crypto-1.0-SNAPSHOT.jar server.ServerOps
+sudo java -cp server/target/server-1.0-SNAPSHOT.jar org.cloudvault.server.ServerOps
+
