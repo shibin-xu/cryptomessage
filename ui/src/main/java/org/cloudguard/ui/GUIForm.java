@@ -1,11 +1,11 @@
-package org.cloudvault.ui;
+package org.cloudguard.ui;
 
 import com.google.gson.Gson;
-import org.cloudvault.commons.ClientUtil;
-import org.cloudvault.commons.LoginResponse;
-import org.cloudvault.commons.RegisterResponse;
-import org.cloudvault.commons.Response;
-import org.cloudvault.crypto.*;
+import org.cloudguard.commons.ClientUtil;
+import org.cloudguard.commons.LoginResponse;
+import org.cloudguard.commons.RegisterResponse;
+import org.cloudguard.commons.Response;
+import org.cloudguard.crypto.*;
 
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;

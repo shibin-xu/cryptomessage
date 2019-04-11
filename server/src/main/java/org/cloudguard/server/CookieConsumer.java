@@ -1,4 +1,4 @@
-package org.cloudvault.server;
+package org.cloudguard.server;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;

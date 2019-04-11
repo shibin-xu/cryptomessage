@@ -1,4 +1,4 @@
-package org.cloudvault.commons;
+package org.cloudguard.commons;
 
 import java.util.List;
 import java.util.Map;

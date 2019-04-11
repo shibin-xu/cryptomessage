@@ -1,4 +1,4 @@
-package org.cloudvault.ui;
+package org.cloudguard.ui;
 
 import java.security.PublicKey;
 import java.util.Objects;

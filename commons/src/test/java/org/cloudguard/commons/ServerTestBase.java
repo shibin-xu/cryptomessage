@@ -1,4 +1,4 @@
-package org.cloudvault.commons;
+package org.cloudguard.commons;
 
 import com.google.gson.Gson;
 import org.junit.jupiter.api.AfterAll;

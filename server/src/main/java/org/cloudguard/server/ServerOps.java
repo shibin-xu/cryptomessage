@@ -1,8 +1,8 @@
-package org.cloudvault.server;
+package org.cloudguard.server;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.cloudvault.crypto.CryptoUtil;
+import org.cloudguard.crypto.CryptoUtil;
 
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
@@ -58,7 +58,7 @@ public class ServerOps {
 
         private static String getMySQLPassword(){
               Scanner scanIn = new Scanner(System.in);
-	      System.out.print("Please enter your MySQL password for 'root':"); 
+	      System.out.print("Please enter your MySQL password for 'root':");
 	      String sqlPassword = scanIn.nextLine();
 	      return sqlPassword;
 	}
@@ -71,9 +71,9 @@ public class ServerOps {
         }
 
 
-     
+
         /**
-	 * 
+	 *
 	 * This function generates a server socket to wait for connections
 	 */
 	public static SSLServerSocket getServerSocket(String keystorepassword){

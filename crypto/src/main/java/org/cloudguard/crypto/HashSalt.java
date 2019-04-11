@@ -1,4 +1,4 @@
-package org.cloudvault.crypto;
+package org.cloudguard.crypto;
 
 public class HashSalt {
     private String hash; // hex string of hash result from SHA3-512

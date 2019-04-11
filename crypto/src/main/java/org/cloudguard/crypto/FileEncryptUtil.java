@@ -1,12 +1,12 @@
-package org.cloudvault.crypto;
+package org.cloudguard.crypto;
 
 import com.google.gson.Gson;
 import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.crypto.InvalidCipherTextException;
-import org.cloudvault.commons.ClientUtil;
-import org.cloudvault.commons.DecryptAESResponse;
-import org.cloudvault.commons.PublicKeyResponse;
-import org.cloudvault.commons.Response;
+import org.cloudguard.commons.ClientUtil;
+import org.cloudguard.commons.DecryptAESResponse;
+import org.cloudguard.commons.PublicKeyResponse;
+import org.cloudguard.commons.Response;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -21,7 +21,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.cloudvault.commons.ClientUtil.queryuser;
+import static org.cloudguard.commons.ClientUtil.queryuser;
 
 public class FileEncryptUtil {
     private FileEncryptUtil() {
