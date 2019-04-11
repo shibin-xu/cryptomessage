@@ -1,4 +1,4 @@
-package org.cloudvault.commons;
+package org.cloudguard.commons;
 
 public class UsernameSanitizer {
     public static boolean validateUsername(String email) {

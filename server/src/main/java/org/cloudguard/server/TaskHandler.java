@@ -1,8 +1,8 @@
-package org.cloudvault.server;
+package org.cloudguard.server;
 
 import com.google.gson.Gson;
-import org.cloudvault.commons.*;
-import org.cloudvault.crypto.*;
+import org.cloudguard.commons.*;
+import org.cloudguard.crypto.*;
 
 import javax.net.ssl.SSLSocket;
 import java.io.DataInputStream;
@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
-import static org.cloudvault.crypto.PasswordUtil.generateCookie;
+import static org.cloudguard.crypto.PasswordUtil.generateCookie;
 
 public class TaskHandler extends Thread{
 	private static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(TaskHandler.class);
@@ -52,16 +52,16 @@ public class TaskHandler extends Thread{
 			String className = request.getClassName();
 
 			switch (className) {
-				case "org.cloudvault.commons.RegisterRequest":
+				case "org.cloudguard.commons.RegisterRequest":
 					register(request);
 					break;
-				case "org.cloudvault.commons.LoginRequest":
+				case "org.cloudguard.commons.LoginRequest":
 					login(request);
 					break;
-				case "org.cloudvault.commons.DecryptAESRequest":
+				case "org.cloudguard.commons.DecryptAESRequest":
 					decrypt(request);
 					break;
-				case "org.cloudvault.commons.PublicKeyRequest":
+				case "org.cloudguard.commons.PublicKeyRequest":
 					queryuser(request);
 					break;
 			}

@@ -1,4 +1,4 @@
-package org.cloudvault.commons;
+package org.cloudguard.commons;
 
 import com.google.gson.Gson;
 
@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Scanner;
 
-import static org.cloudvault.commons.UsernameSanitizer.validateUsername;
+import static org.cloudguard.commons.UsernameSanitizer.validateUsername;
 
 
 public class ClientUtil {

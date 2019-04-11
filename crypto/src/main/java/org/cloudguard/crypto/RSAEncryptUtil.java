@@ -1,4 +1,4 @@
-package org.cloudvault.crypto;
+package org.cloudguard.crypto;
 
 import org.apache.commons.codec.binary.Base64;
 

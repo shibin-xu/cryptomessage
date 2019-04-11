@@ -1,4 +1,4 @@
-package org.cloudvault.ui;
+package org.cloudguard.ui;
 
 import java.util.Objects;
 

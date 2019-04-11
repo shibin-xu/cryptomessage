@@ -1,6 +1,6 @@
-package org.cloudvault.ui;
+package org.cloudguard.ui;
 
-import org.cloudvault.crypto.*;
+import org.cloudguard.crypto.*;
 
 import org.apache.commons.io.FilenameUtils;
 
