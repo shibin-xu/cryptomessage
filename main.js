@@ -35,7 +35,7 @@ app.on('ready', () => {
 
 
 function spawnCore(hookIn, hookOut, hookErr) {
-    //core = spawn('java',  ['-cp','target/ipc-1.0-SNAPSHOT.jar','org.cloudguard.ipc.hwserver']);
+    core = spawn('java',  ['-cp','ipc/target/ipc-1.0-SNAPSHOT.jar','org.cloudguard.ipc.hwserver']);
 }
 
 
