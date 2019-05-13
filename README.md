@@ -19,3 +19,21 @@ Visit the URL saved <br />
 `unzip CloudGuard.zip` <br />
 `cd CloudGuard` <br />
 `./client_linux` <br />
+
+
+
+## Getting Started
+
+install zmq 4.0.4
+* Linux: `sudo apt-get install libzmq3-dev`
+* OSX: `brew install zmq`
+* Windows: `http://zeromq.org/distro:microsoft-windows`
+
+install dependencies:
+`npm install`
+
+change zeromq build target
+`npm rebuild zeromq --runtime=electron --target=2.0.18`
+
+run electron 
+`npm start`
