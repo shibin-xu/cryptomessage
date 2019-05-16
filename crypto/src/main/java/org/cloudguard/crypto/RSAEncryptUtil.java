@@ -180,4 +180,24 @@ public class RSAEncryptUtil {
             InvalidKeySpecException {
         return KeyFactory.getInstance(ALGORITHM).generatePublic(new X509EncodedKeySpec(Base64.decodeBase64(key)));
     }
+
+    public static String sign(String text, PublicKey key) {
+        // TODO
+        return null;
+    }
+
+    public static byte[] sign(byte[] text, PublicKey key) {
+        // TODO
+        return null;
+    }
+
+    public static String verify(String text, PublicKey key) {
+        // TODO
+        return null;
+    }
+
+    public static byte[] verify(byte[] text, PublicKey key) {
+        // TODO
+        return null;
+    }
 }
