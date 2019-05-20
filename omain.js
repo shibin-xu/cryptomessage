@@ -1,38 +1,71 @@
-const {app, BrowserWindow} = require('electron');
-const ipc = require('electron').ipcMain;
-const zeromq = require("zeromq");
-const fs = require('fs');
-const { spawn } = require('child_process');
-const util = require("util");
+const {app, BrowserWindow} = require('electron')
+const ipc = require('electron').ipcMain
+const installExtension, { VUEJS_DEVTOOLS } = require('electron-devtools-installer')
+const zeromq = require("zeromq")
+const fs = require('fs')
+const { spawn } = require('child_process')
+const util = require('util')
+const path = require('path')
 
 
-let ui;
+let mainWindow;
 let core;
 let zmqClient;
+const isDevMode = process.execPath.match(/[\\/]electron/);
+
+if (isDevMode) enableLiveReload();
 
 app.on('window-all-closed', () => {
     if (core) {
         core.stdin.pause();
         core.kill();
     }
-    app.quit();
+    // On OS X it is common for applications and their menu bar
+    // to stay active until the user quits explicitly with Cmd + Q
+    if (process.platform !== 'darwin') {
+        app.quit();
+    }
 });
 
 app.on('ready', () => {
     spawnCore();
     connectToZmq();
-    ui = new BrowserWindow({
+    mainWindow = new BrowserWindow({
         height: 800,
-        width: 800,
+        width: 600,
         resizable: true
     });
-    ui.loadURL('file://' + __dirname + '/frontend/index.html');
-
-    ui.on('closed', () => {
-        app.quit();
+    // Load the HTML file directly from the webpack dev server if
+    // hot reload is enabled, otherwise load the local file.
+    const mainURL = process.env.HOT
+      ? `http://localhost:${process.env.PORT}/main.html`
+      : 'file://' + path.join(__dirname, 'main.html')
+  
+    mainWindow.loadURL(mainURL)
+  
+    // Open the DevTools.
+    if (isDevMode) {
+      
+      mainWindow.webContents.openDevTools();
+      await installExtension(VUEJS_DEVTOOLS);
+    }
+  
+    // Emitted when the window is closed.
+    mainWindow.on('closed', () => {
+      // Dereference the window object, usually you would store windows
+      // in an array if your app supports multi windows, this is the time
+      // when you should delete the corresponding element.
+      mainWindow = null;
     });
 });
 
+app.on('activate', () => {
+    // On OS X it's common to re-create a window in the app when the
+    // dock icon is clicked and there are no other windows open.
+    if (mainWindow === null) {
+      createWindow();
+    }
+});
 
 function spawnCore(hookIn, hookOut, hookErr) {
     core = spawn('java',  ['-cp','ipc/target/ipc-1.0-SNAPSHOT.jar','org.cloudguard.ipc.hwserver']);

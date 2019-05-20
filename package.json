@@ -1,23 +1,85 @@
 {
-  "name": "xtmessage",
-  "version": "0.5.0",
-  "description": "messaging",
-  "main": "main.js",
+  "name": "msgrcrypto",
+  "productName": "msgrcrypto",
+  "version": "1.0.0",
+  "description": "My msgrcrypto",
+  "main": "src/background.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make",
+    "publish": "electron-forge publish",
+    "lint": "echo \"No linting configured\""
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shibix/cryptomessage.git"
   },
-  "author": "",
-  "license": "ISC",
   "bugs": {
     "url": "https://github.com/shibix/cryptomessage/issues"
   },
   "homepage": "https://github.com/shibix/cryptomessage#readme",
+  "config": {
+    "forge": {
+      "make_targets": {
+        "win32": [
+          "squirrel"
+        ],
+        "darwin": [
+          "zip"
+        ],
+        "linux": [
+          "deb",
+          "rpm"
+        ]
+      },
+      "electronPackagerConfig": {
+        "afterExtract": [
+          "./build-scripts/afterExtract.js"
+        ],
+        "afterCopy": [
+          "./build-scripts/afterCopy.js"
+        ],
+        "derefSymlinks": true,
+        "ignore": [
+          "/build-scripts/"
+        ],
+        "overwrite": true,
+        "prune": true
+      },
+      "electronWinstallerConfig": {
+        "name": "msgrcrypto"
+      },
+      "electronInstallerDebian": {},
+      "electronInstallerRedhat": {},
+      "github_repository": {
+        "owner": "",
+        "name": ""
+      },
+      "windowsStoreConfig": {
+        "packageName": "",
+        "name": "msgrcrypto"
+      }
+    }
+  },
   "dependencies": {
-    "electron": "2.0.18",
-    "zeromq": "^5.1.0"
+    "electron-compile": "^6.4.4",
+    "electron": "2.0.16",
+    "electron-devtools-installer": "^2.1.0",
+    "electron-squirrel-startup": "^1.0.0",
+    "zeromq": "^5.1.0",
+    "vue": "^2.6.10",
+    "vue-electron": "^1.0.6",
+    "vueify": "^9.4.1"
+  },
+  "devDependencies": {
+    "babel-plugin-transform-async-to-generator": "^6.24.1",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-react": "^6.24.1",
+    "electron-forge": "^5.2.4",
+    "electron-prebuilt-compile": "2.0.16"
   }
 }

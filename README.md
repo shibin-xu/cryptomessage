@@ -33,7 +33,7 @@ install dependencies:
 `npm install`
 
 change zeromq build target
-`npm rebuild zeromq --runtime=electron --target=2.0.18`
+`npm rebuild zeromq --runtime=electron --target=2.0.16`
 
 run electron 
 `npm start`
