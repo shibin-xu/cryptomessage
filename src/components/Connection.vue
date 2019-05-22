@@ -1,5 +1,5 @@
 <template>
-   <button v-on:click="emit()">{{local.word}} to {{local.addr}}</button>
+   <md-button class="md-raised md-primary" v-on:click="emit()">{{local.word}} to {{local.addr}}</md-button>
 </template>
 
 <script>

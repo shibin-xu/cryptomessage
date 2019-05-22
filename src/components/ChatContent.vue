@@ -1,9 +1,12 @@
 <template>
-    <div id="chatline">
-        {{ line.id }}
-        <br/>
+    <md-content  id="chatline">
+      <md-avatar class="md-avatar-icon md-primary">
+        <md-icon>face</md-icon>
+      </md-avatar>
+      <div>
         {{ line.text }}
-    </div>
+      </div>
+    </md-content>
 </template>
 
 <script>

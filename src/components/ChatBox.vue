@@ -1,5 +1,5 @@
 <template>
-	<div >
+	<md-content >
     <div id="chatbox" v-if="contentLines.length">
 			<ChatContent
         
@@ -9,12 +9,14 @@
 				:line="line"
 			/>
 		</div>
-		<EntryText v-model="draftText"/><EntryButton @transmit="entryTransmit"/>
-	</div>
+    <md-field>
+      <label>Chat</label>
+		  <md-textarea v-model="draftText"></md-textarea><EntryButton @transmit="entryTransmit"/>
+    </md-field>
+	</md-content>
 </template>
 
 <script>
-import EntryText from './EntryText.vue'
 import EntryButton from './EntryButton.vue'
 import ChatContent from './ChatContent.vue'
 
@@ -22,7 +24,6 @@ let nextLineId = 1
 
 export default {
   components: {
-    EntryText,
     EntryButton,
     ChatContent,
   },
@@ -57,7 +58,7 @@ export default {
           fromSelf: true
         })
         this.$emit('transmit', trimmedText)
-        this.contentText = ''
+        this.draftText = ''
       }
     }
   }

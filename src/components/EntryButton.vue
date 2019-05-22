@@ -1,5 +1,5 @@
 <template>
-   <button v-on:click="emit()">Send</button>
+   <md-button class="md-raised md-accent" v-on:click="emit()">Send</md-button>
 </template>
 
 <script>
