@@ -12,7 +12,7 @@
     "lint": "echo \"No linting configured\""
   },
   "keywords": [],
-  "author": "",
+  "author": "sheridan,jack",
   "license": "ISC",
   "repository": {
     "type": "git",
@@ -66,15 +66,15 @@
     }
   },
   "dependencies": {
-    "electron": "2.0.16",
     "electron-compile": "^6.4.4",
+    "electron": "2.0.16",
     "electron-devtools-installer": "^2.1.0",
     "electron-squirrel-startup": "^1.0.0",
+    "zeromq": "^5.1.0",
     "vue": "^2.6.10",
     "vue-electron": "^1.0.6",
-    "vue-material": "latest",
-    "vueify": "^9.4.1",
-    "zeromq": "^5.1.0"
+    "vue-material": "1.0.0-beta-11",
+    "vueify": "^9.4.1"
   },
   "devDependencies": {
     "babel-plugin-transform-async-to-generator": "^6.24.1",
