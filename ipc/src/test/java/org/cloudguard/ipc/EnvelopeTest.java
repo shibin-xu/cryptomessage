@@ -10,9 +10,12 @@ import org.junit.jupiter.api.Test;
 
 import java.io.UnsupportedEncodingException;
 import java.security.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class EnvelopeTest {
     protected static Gson gson;
@@ -63,5 +66,48 @@ public class EnvelopeTest {
         boolean actual = RSAEncryptUtil.verify(gson.toJson(message), proof, publicKey);
 
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void chainTest() throws Exception {
+        String body = "This is Message " + 0;
+        String hashOfLastMessage = PasswordUtil.hash("");
+        Date date = new Date();
+        Message message = new Message(body, hashOfLastMessage, date.getTime());
+        String text = gson.toJson(message);
+        String proof = RSAEncryptUtil.sign(text, privateKey);
+        Envelope envelope = new Envelope(message, proof);
+        List<Envelope> list = new ArrayList<>();
+        list.add(envelope);
+
+        // Construct a chain of messages
+        for (int i = 1; i < 10; i++) {
+            body = "This is Message " + i;
+            hashOfLastMessage = PasswordUtil.hash(text);
+            date = new Date();
+            message = new Message(body, hashOfLastMessage, date.getTime());
+            text = gson.toJson(message);
+            proof = RSAEncryptUtil.sign(text, privateKey);
+            envelope = new Envelope(message, proof);
+            list.add(envelope);
+        }
+
+        // Verify the chain
+        boolean expected = true;
+        envelope = list.get(0);
+        message = envelope.getMessage();
+        proof = envelope.getSignature();
+        assertEquals(message.getHashOfLastMessage(), PasswordUtil.hash(""));
+        assertEquals(true, RSAEncryptUtil.verify(gson.toJson(message), proof, publicKey));
+
+        for (int i = 1; i < 10; i++) {
+            hashOfLastMessage = PasswordUtil.hash(gson.toJson(message));
+
+            envelope = list.get(i);
+            message = envelope.getMessage();
+            proof = envelope.getSignature();
+            assertEquals(message.getHashOfLastMessage(), hashOfLastMessage);
+            assertEquals(true, RSAEncryptUtil.verify(gson.toJson(message), proof, publicKey));
+        }
     }
 }
