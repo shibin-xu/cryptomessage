@@ -181,23 +181,43 @@ public class RSAEncryptUtil {
         return KeyFactory.getInstance(ALGORITHM).generatePublic(new X509EncodedKeySpec(Base64.decodeBase64(key)));
     }
 
-    public static String sign(String text, PublicKey key) {
-        // TODO
-        return null;
+    public static String sign(String text, PrivateKey key) throws
+            UnsupportedEncodingException,
+            NoSuchAlgorithmException,
+            NoSuchProviderException,
+            InvalidKeyException,
+            SignatureException {
+        return Base64.encodeBase64String(sign(text.getBytes("UTF8"), key));
     }
 
-    public static byte[] sign(byte[] text, PublicKey key) {
-        // TODO
-        return null;
+    public static byte[] sign(byte[] text, PrivateKey key) throws
+            NoSuchProviderException,
+            NoSuchAlgorithmException,
+            InvalidKeyException,
+            SignatureException {
+        Signature signature = Signature.getInstance("SHA256WithRSA", "BC");
+        signature.initSign(key);
+        signature.update(text);
+        return signature.sign();
     }
 
-    public static String verify(String text, PublicKey key) {
-        // TODO
-        return null;
+    public static boolean verify(String text, String proof, PublicKey key) throws
+            UnsupportedEncodingException,
+            NoSuchAlgorithmException,
+            NoSuchProviderException,
+            InvalidKeyException,
+            SignatureException {
+        return verify(text.getBytes("UTF8"), Base64.decodeBase64(proof), key);
     }
 
-    public static byte[] verify(byte[] text, PublicKey key) {
-        // TODO
-        return null;
+    public static boolean verify(byte[] text, byte[] proof, PublicKey key) throws
+            NoSuchProviderException,
+            NoSuchAlgorithmException,
+            InvalidKeyException,
+            SignatureException {
+        Signature signature = Signature.getInstance("SHA256WithRSA", "BC");
+        signature.initVerify(key);
+        signature.update(text);
+        return signature.verify(proof);
     }
 }

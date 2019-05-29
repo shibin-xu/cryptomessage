@@ -5,6 +5,7 @@ public class Message {
     private String body;                // Message content
     private String hashOfLastMessage;   // Hash of last message
     private String Signature;           // Mac of encryption result
+    private long time;                  // Timestamp of sending
 
     // TODO
     // TODO Encrypt then Mac
