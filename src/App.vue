@@ -11,7 +11,7 @@
       <md-tab id="tab-pages" md-label="My Account" md-icon="assets/gsvg/ic_perm_identity_48px.svg">
         <Connection v-model="mystuffObj" @transmit="dostuff"/>
       </md-tab>
-      <md-tab id="tab-posts" md-label="Add Friend" md-icon="assets/gsvg/ic_face_48px.svg">
+      <md-tab id="tab-posts" md-label="Add Friend" md-icon="assets/gsvg/ic_settings_ethernet_48px.svg">
         <Connection v-model="addfriendObj" @transmit="doaddfriend"/>
         <Connection v-model="remfriendObj" @transmit="doremfriend"/>
       </md-tab>
@@ -58,11 +58,30 @@ export default {
         {
           word: 'remfriend',
           addr: '123',
+        },
+      chatboxObj:
+        {
+          contentLines: [],
         }
     }
   },
   mounted () {
       setInterval(() => { this.$electron.ipcRenderer.send('ping') }, 1000)
+      this.$electron.ipcRenderer.on('elecConfirmConnect', (_, data) => {
+        this.connectObj.addr = '--';
+      });
+      this.$electron.ipcRenderer.on('elecConfirmDisconnect', (_, data) => {
+        this.disconnectObj.addr = '--';
+      });
+      this.$electron.ipcRenderer.on('elecConfirmSend', (_, data) => {
+        this.doremfriend(data)
+      });
+      this.$electron.ipcRenderer.on('elecRecieve', (_, data) => {
+        this.doremfriend(data)
+      });
+      this.$electron.ipcRenderer.on('elecRaw', (_, data) => {
+        
+      });
   },
   methods: {
     sendData(dataName, value) {
@@ -82,7 +101,7 @@ export default {
       this.sendData("send",words)
     },
     dostuff (words) {
-      this.sendData("stuff",words)
+      this.sendData("get",words)
     },
     doaddfriend (words) {
       this.sendData("add",words)

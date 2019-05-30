@@ -9,6 +9,14 @@
 <artifactId>ipc</artifactId>
 <packaging>jar</packaging>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.cloudguard</groupId>
+            <artifactId>crypto</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>

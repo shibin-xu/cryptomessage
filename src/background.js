@@ -25,7 +25,7 @@ const createWindow = async () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 800,
-    height: 600,
+    height: 770,
   });
 
   // Load the HTML file directly from the webpack dev server if
@@ -78,7 +78,7 @@ app.on('activate', () => {
 
 function spawnCore() {
   util.log("java starting")
-  core = spawn('java',  ['-cp','ipc/target/ipc-1.0-SNAPSHOT.jar','org.cloudguard.ipc.hwserver']);
+  core = spawn('java',  ['-cp','ipc/target/ipc-1.0-SNAPSHOT.jar','org.cloudguard.ipc.Main']);
 
   util.log(core.pid)
   core.stdout.on('data',function(chunk){
@@ -94,23 +94,23 @@ function spawnCore() {
   });
   core.on('error', (err) => console.error(err));
   
-  util.log("java okay")
 }
 
-function makeJson(a,b) {
-  let obj = { cmd:a, payload:b }
+function makeJson(a,b,c) {
+  let obj = { relayType:a, relayContent:b, time:c }
   let result = JSON.stringify(obj);
   return result;
 }
 function readJson(raw) {
   let cmd = "hm"
   let payload = "paylo"
+  let timestamp = 1
   let rawstring = raw.toString('ascii')
-  console.log(rawstring)
   let obj = JSON.parse(rawstring);
-  cmd = obj[0]
-  payload = obj[1]
-  return [cmd,payload]
+  cmd = obj["relayType"]
+  payload = obj["relayContent"]
+  timestamp = obj["time"]
+  return [cmd,payload,timestamp]
 }
 function connectToZmq() {
   util.log("zmq starting")
@@ -120,44 +120,52 @@ function connectToZmq() {
     event.sender.send('pong', Math.random())
   });
   ipcMain.on('connect', () => {
-    let blob = makeJson('hwConnect')
+    let blob = makeJson('CRYPTORequestConnect')
     zmqClient.send(blob)
   });
 
   ipcMain.on('disconnect', () => {
-    let blob = makeJson('hwDisconnect')
+    let blob = makeJson('CRYPTORequestDisconnect')
     zmqClient.send(blob)
   });
 
   ipcMain.on('send', (event, val) => {
-    let blob = makeJson('hwSend',val)
+    let blob = makeJson('CRYPTOSend',val)
     zmqClient.send(blob)
   });
+  ipcMain.on('get', () => {
+    let blob = makeJson('CRYPTORequestRecieve')
+    zmqClient.send(blob)
+  });
+  ipcMain.on('rem', () => {
+    util.log("hi")
+  });
 
-  util.log("zmq okay")
 
   zmqClient.on(`message`, function (raw) {         
       let json = readJson(raw);
       let cmd = json[0]
       let payload = json[1]
-      if(cmd == 'jsConnected')
+      let timestamp = json[2]
+      if(cmd == 'UIConfirmConnect')
       {
-        mainWindow.webContents.send('elec-connect-response', payload);
+        mainWindow.webContents.send('elecConfirmConnect', payload);
       }
-      else if(cmd == 'jsDisconnected')
+      else if(cmd == 'UIConfirmDisconnect')
       {
-        mainWindow.webContents.send('elec-disconnect-response', payload);
+        mainWindow.webContents.send('elecConfirmDisconnect', payload);
       }
-      else if(cmd == 'jsMsg')
+      else if(cmd == 'UIConfirmSend')
       {
-        mainWindow.webContents.send('elec-message-response', payload);
+        mainWindow.webContents.send('elecConfirmSend', payload);
+      }
+      else if(cmd == 'UIRecieve')
+      {
+        mainWindow.webContents.send('elecRecieve', payload);
       }
       else
       {
-        mainWindow.webContents.send('elec-raw-response', raw);
+        mainWindow.webContents.send('elecRaw', raw);
       }
   });     
-
-  
-  zmqClient.send(makeJson('hwConnect'))
 }
