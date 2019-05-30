@@ -4,18 +4,18 @@
         <h1 class="md-title">CryptoMessageXT</h1>
     </md-toolbar>
      <md-tabs>
-      <md-tab id="tab-home" md-label="Home" md-icon="home">
+      <md-tab id="tab-home" md-label="Home" md-icon="assets/gsvg/ic_home_48px.svg">
         <Connection v-model="connectObj" @transmit="doconnect"/>
         <Connection v-model="disconnectObj" @transmit="dodisconnect"/>
       </md-tab>
-      <md-tab id="tab-pages" md-label="My Account" md-icon="perm_identity">
+      <md-tab id="tab-pages" md-label="My Account" md-icon="assets/gsvg/ic_perm_identity_48px.svg">
         <Connection v-model="mystuffObj" @transmit="dostuff"/>
       </md-tab>
-      <md-tab id="tab-posts" md-label="Add Friend" md-icon="settings_ethernet">
+      <md-tab id="tab-posts" md-label="Add Friend" md-icon="assets/gsvg/ic_face_48px.svg">
         <Connection v-model="addfriendObj" @transmit="doaddfriend"/>
         <Connection v-model="remfriendObj" @transmit="doremfriend"/>
       </md-tab>
-      <md-tab id="tab-favorites" md-label="Conversations" md-icon="question_answer">
+      <md-tab id="tab-favorites" md-label="Conversations" md-elevation="2" md-icon="assets/gsvg/ic_question_answer_48px.svg">
 		    <ChatBox @transmit="dosend"/>
       </md-tab>
     </md-tabs>
