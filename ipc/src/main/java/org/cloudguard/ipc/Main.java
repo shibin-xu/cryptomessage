@@ -39,8 +39,6 @@ public class Main {
         System.out.println(date);
         System.out.println(date.getTime());
 
-        System.out.println(new Date(date.getTime()));
-
         gson = new Gson();
 
         CryptoUtil.init();
