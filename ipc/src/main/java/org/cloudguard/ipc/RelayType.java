@@ -5,7 +5,8 @@ public enum RelayType {
     UIConfirmDisconnect,
     UIConfirmSend,
     UIRecieve,
-    CRYPTORequestConnect,
+    CRYPTORequestConnect,// connect to server
+    CRYPTOCreateLoginAccount,
     CRYPTORequestDisconnect,
     CRYPTOSend,
     CRYPTORequestRecieve

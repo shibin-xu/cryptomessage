@@ -68,9 +68,11 @@ export default {
   mounted () {
       setInterval(() => { this.$electron.ipcRenderer.send('ping') }, 1000)
       this.$electron.ipcRenderer.on('elecConfirmConnect', (_, data) => {
+        this.disconnectObj.addr = data;
         this.connectObj.addr = '--';
       });
       this.$electron.ipcRenderer.on('elecConfirmDisconnect', (_, data) => {
+        this.connectObj.addr = data;
         this.disconnectObj.addr = '--';
       });
       this.$electron.ipcRenderer.on('elecConfirmSend', (_, data) => {
