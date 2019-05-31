@@ -16,7 +16,7 @@
         <Connection v-model="remfriendObj" @transmit="doremfriend"/>
       </md-tab>
       <md-tab id="tab-favorites" md-label="Conversations" md-elevation="2" md-icon="assets/gsvg/ic_question_answer_48px.svg">
-		    <ChatBox @transmit="dosend"/>
+		    <ChatBox @transmit="dosend" :contentLines="contentLines"/>
       </md-tab>
     </md-tabs>
 	</div>
@@ -25,6 +25,7 @@
 <script>
 import ChatBox from './components/ChatBox.vue'
 import Connection from './components/Connection.vue'
+let nextLineId = 1
 
 export default {
 	components: {
@@ -59,10 +60,20 @@ export default {
           word: 'remfriend',
           addr: '123',
         },
-      chatboxObj:
+      contentLines: [
         {
-          contentLines: [],
-        }
+          id: nextLineId++,
+          text: 'first',
+          isConfirmed: true,
+          fromSelf: false
+        },
+        {
+          id: nextLineId++,
+          text: 'second',
+          isConfirmed: true,
+          fromSelf: true
+        },
+      ],
     }
   },
   mounted () {
@@ -79,7 +90,12 @@ export default {
         this.doremfriend(data)
       });
       this.$electron.ipcRenderer.on('elecRecieve', (_, data) => {
-        this.doremfriend(data)
+        this.contentLines.push({
+          id: nextLineId++,
+          text: data,
+          isConfirmed: true,
+          fromSelf: false
+        })
       });
       this.$electron.ipcRenderer.on('elecRaw', (_, data) => {
         
@@ -100,6 +116,12 @@ export default {
       this.sendData("disconnect",addr)
     },
     dosend (words) {
+      this.contentLines.push({
+          id: nextLineId++,
+          text: words,
+          isConfirmed: false,
+          fromSelf: true
+        })
       this.sendData("send",words)
     },
     dostuff (words) {

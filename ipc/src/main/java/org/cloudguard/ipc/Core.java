@@ -32,7 +32,7 @@ public class Core {
         
         Relay relay = new Relay(type, payload, sender, 2);
         String serialized = gson.toJson(relay);
-        System.out.println("CRYPTOSend: " + serialized);
+        System.out.println("SendToUI: " + serialized);
         zsocket.send(serialized.getBytes(ZMQ.CHARSET), 0);
     }
 
@@ -40,8 +40,7 @@ public class Core {
         // internet socket stuff
         // ..
 
-        // front end relay
-        SendRelay(zsocket, RelayType.UIConfirmConnect, "4.4.4.255", "0", date);
+        SendRelay(zsocket, RelayType.UIResultForConnect, "4.4.4.255", "0", date);
                         
     }
 
@@ -49,9 +48,36 @@ public class Core {
         // internet socket stuff
         // ..
 
-        // front end relay
-        SendRelay(zsocket, RelayType.UIConfirmDisconnect, "0.1.2.3", "0", date);
+        SendRelay(zsocket, RelayType.UIResultForDisconnect, "0.1.2.3", "0", date);
                         
+    }
+
+    private void LoadPublicKeys(Relay in) {
+        SendRelay(zsocket, RelayType.UIResultForKeyPath, "True", "0", date);
+    }
+
+    
+    private void LoginNew(Relay in) {
+        SendRelay(zsocket, RelayType.UIResultForNewAccount, "True", "0", date);
+    }
+
+    
+    private void LoginExisting(Relay in) {
+        SendRelay(zsocket, RelayType.UIResultForExistingLogin, "True", "0", date);
+    }
+
+    private void AddUser(Relay in) {
+        SendRelay(zsocket, RelayType.UIResultForAddUser, "True", "0", date);
+    }
+
+    private void RemoveUser(Relay in) {
+        SendRelay(zsocket, RelayType.UIResultForRemoveUser, "False", "0", date);
+    }
+    private void GetAllUser() {
+        SendRelay(zsocket, RelayType.UIResultForAllUser, "bob,eve", "0", date);
+    }
+    private void GetUserArchive(Relay in) {
+        SendRelay(zsocket, RelayType.UIResultForUserArchive, "a,b,c,d,e", "0", date);
     }
 
     private void SendMessage(Relay relay) {
@@ -68,8 +94,7 @@ public class Core {
             // internet socket stuff
             // ..
 
-            // front end relay
-            SendRelay(zsocket, RelayType.UIConfirmSend, relay.getContent(), "0", this.date);   
+            SendRelay(zsocket, RelayType.UIResultForMessageSend, relay.getContent(), "0", this.date);   
         }
         catch(Exception e)
         {
@@ -80,17 +105,15 @@ public class Core {
 
     private void FakeRcMessage() {
         
-        // TODO, change this to  automatic whenever a packet comes in
         try
         {
             String body = "This is a test.";
             Message expected = new Message(body, this.hashOfLastMessage, date.getTime());
             String serialized = gson.toJson(expected);
             Message actual = gson.fromJson(serialized, Message.class);
+            String origin = "3434";
 
-            // front end relay
-            //SendRelay(zsocket, RelayType.UIRecieve, actual.getBody(), date);
-            SendRelay(zsocket, RelayType.UIRecieve, this.hashOfLastMessage, "33434", date);
+            SendRelay(zsocket, RelayType.UIMessageReceive, actual.getBody(), origin, date);
         }
         catch(Exception e)
         {
@@ -99,7 +122,7 @@ public class Core {
     }
 
     public Core() {
-        this.date = new Date();
+        date = new Date();
         gson = new Gson();
 
         try
@@ -109,7 +132,7 @@ public class Core {
             publicKey = keyPair.getPublic();
             privateKey = keyPair.getPrivate();
 
-            this.hashOfLastMessage = PasswordUtil.hash("");
+            hashOfLastMessage = PasswordUtil.hash("");
         }
         catch(Exception e)
         {
@@ -127,25 +150,46 @@ public class Core {
             while (!Thread.currentThread().isInterrupted()) {
                 // Block until a message is received
                 byte[] raw = zsocket.recv(0);
-                Relay xRelay = ReadRelay(raw);
-                System.out.println("JVReceived: " + xRelay);
+                Relay inputRelay = ReadRelay(raw);
+                System.out.println("ReceivedFromUI: " + inputRelay);
 
-                RelayType relayType = xRelay.getType();
-                // switch to enum
+                RelayType relayType = inputRelay.getType();
+                
                 switch(relayType)
                 {
                     default:
                         break;
-                    case CRYPTORequestConnect:
+                    case CRYPTOOpenConnectionToServer:
                         ConnectToServer();
                         break;
-                    case CRYPTORequestDisconnect:
-                        DisconnectFromServer(); 
+                    case CRYPTODisconnectFromServer:
+                        DisconnectFromServer();
+                        break;
+                    case CRYPTOLoginNewAccount:
+                        LoginNew(inputRelay); 
+                        break;
+                    case CRYPTOLoginExistingAccount:
+                        LoginExisting(inputRelay); 
+                        break;
+                    case CRYPTOSetFilePathOfKey:
+                        LoadPublicKeys(inputRelay); 
+                        break;
+                    case CRYPTOAddUser:
+                        AddUser(inputRelay);
+                        break;
+                    case CRYPTORemoveUser:
+                        RemoveUser(inputRelay);
+                        break;
+                    case CRYPTOGetAllUser:
+                        GetAllUser();
+                        break;
+                    case CRYPTOGetUserArchive:
+                        GetUserArchive(inputRelay);
                         break;
                     case CRYPTOSend:
-                        SendMessage(xRelay);
+                        SendMessage(inputRelay);
                         break;
-                    case CRYPTORequestRecieve:
+                    case CRYPTOFakeReceive:
                         FakeRcMessage();
                         break;
                 }

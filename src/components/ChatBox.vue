@@ -20,30 +20,17 @@
 import EntryButton from './EntryButton.vue'
 import ChatContent from './ChatContent.vue'
 
-let nextLineId = 1
-
 export default {
   components: {
     EntryButton,
     ChatContent,
   },
+  props: {
+    contentLines:Array,
+  },
   data () {
     return {
-      draftText: "a"	,
-      contentLines: [ 
-        {
-          id: nextLineId++,
-          text: 'first',
-          isConfirmed: true,
-          fromSelf: false
-        },
-        {
-          id: nextLineId++,
-          text: 'second',
-          isConfirmed: true,
-          fromSelf: true
-        },
-      ]
+      draftText: "Say.."	,
     }
   },
   methods: {
@@ -51,12 +38,6 @@ export default {
       const trimmedText = this.draftText.trim()
       if(trimmedText)
       {
-        this.contentLines.push({
-          id: nextLineId++,
-          text: trimmedText,
-          isConfirmed: false,
-          fromSelf: true
-        })
         this.$emit('transmit', trimmedText)
         this.draftText = ''
       }

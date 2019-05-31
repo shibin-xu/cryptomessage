@@ -1,13 +1,33 @@
 package org.cloudguard.ipc;
 
 public enum RelayType {
-    UIConfirmConnect,
-    UIConfirmDisconnect,
-    UIConfirmSend,
-    UIRecieve,
-    CRYPTORequestConnect,// connect to server
-    CRYPTOCreateLoginAccount,
-    CRYPTORequestDisconnect,
+    UIResultForConnect,
+    UIResultForDisconnect,
+    UIResultForKeyPath,
+    UIResultForNewAccount,
+    UIResultForExistingLogin,
+    UIResultForAddUser,
+    UIResultForRemoveUser,
+
+    UIResultForAllUser,
+    UIResultForUserArchive,
+    
+    UIResultForMessageSend,
+    UIMessageReceive,
+
+    CRYPTOOpenConnectionToServer,
+    CRYPTODisconnectFromServer,
+    CRYPTOLoginNewAccount,
+    CRYPTOLoginExistingAccount,
+    CRYPTOSetFilePathOfKey,
+    CRYPTOAddUser,
+    CRYPTORemoveUser,
+    
+    CRYPTOGetAllUser,
+    CRYPTOGetUserArchive,
+
     CRYPTOSend,
-    CRYPTORequestRecieve
+
+    CRYPTOFakeReceive,
+    
 }

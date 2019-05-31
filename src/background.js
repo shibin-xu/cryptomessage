@@ -120,25 +120,55 @@ function connectToZmq() {
     event.sender.send('pong', Math.random())
   });
   ipcMain.on('connect', () => {
-    let blob = makeJson('CRYPTORequestConnect')
+    let blob = makeJson('CRYPTOOpenConnectionToServer')
     zmqClient.send(blob)
   });
 
   ipcMain.on('disconnect', () => {
-    let blob = makeJson('CRYPTORequestDisconnect')
+    let blob = makeJson('CRYPTODisconnectFromServer')
     zmqClient.send(blob)
   });
 
+  ipcMain.on('login-new', (event, val) => {
+    let blob = makeJson('CRYPTOLoginNewAccount', val)
+    zmqClient.send(blob)
+  });
+  
+  ipcMain.on('login-existing', (event, val) => {
+    let blob = makeJson('CRYPTOLoginExistingAccount', val)
+    zmqClient.send(blob)
+  });
+  
+  ipcMain.on('set-file-path', (event, val) => {
+    let blob = makeJson('CRYPTOSetFilePathOfKey', val)
+    zmqClient.send(blob)
+  });
+  
+  ipcMain.on('add-user', (event, val) => {
+    let blob = makeJson('CRYPTOAddUser', val)
+    zmqClient.send(blob)
+  });
+  ipcMain.on('rem-user', (event, val) => {
+    let blob = makeJson('CRYPTORemoveUser', val)
+    zmqClient.send(blob)
+  });
+  
+  ipcMain.on('get-all-user', () => {
+    let blob = makeJson('CRYPTOGetAllUser')
+    zmqClient.send(blob)
+  });
+  
+  ipcMain.on('get-archive-user', (event, val) => {
+    let blob = makeJson('CRYPTOGetUserArchive', val)
+    zmqClient.send(blob)
+  });
   ipcMain.on('send', (event, val) => {
     let blob = makeJson('CRYPTOSend',val)
     zmqClient.send(blob)
   });
   ipcMain.on('get', () => {
-    let blob = makeJson('CRYPTORequestRecieve')
+    let blob = makeJson('CRYPTOFakeReceive')
     zmqClient.send(blob)
-  });
-  ipcMain.on('rem', () => {
-    util.log("hi")
   });
 
 
@@ -147,19 +177,19 @@ function connectToZmq() {
       let cmd = json[0]
       let payload = json[1]
       let timestamp = json[2]
-      if(cmd == 'UIConfirmConnect')
+      if(cmd == 'UIResultForConnect')
       {
         mainWindow.webContents.send('elecConfirmConnect', payload);
       }
-      else if(cmd == 'UIConfirmDisconnect')
+      else if(cmd == 'UIResultForDisconnect')
       {
         mainWindow.webContents.send('elecConfirmDisconnect', payload);
       }
-      else if(cmd == 'UIConfirmSend')
+      else if(cmd == 'UIResultForMessageSend')
       {
         mainWindow.webContents.send('elecConfirmSend', payload);
       }
-      else if(cmd == 'UIRecieve')
+      else if(cmd == 'UIMessageReceive')
       {
         mainWindow.webContents.send('elecRecieve', payload);
       }
