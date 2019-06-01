@@ -40,7 +40,7 @@ public class Core {
         // internet socket stuff
         // ..
 
-        SendRelay(zsocket, RelayType.UIResultForConnect, "4.4.4.255", "0", date);
+        SendRelay(zsocket, RelayType.UIResultForConnect, "4.4.4.255", "-", date);
                         
     }
 
@@ -48,43 +48,59 @@ public class Core {
         // internet socket stuff
         // ..
 
-        SendRelay(zsocket, RelayType.UIResultForDisconnect, "0.1.2.3", "0", date);
+        SendRelay(zsocket, RelayType.UIResultForDisconnect, "-", "-", date);
                         
     }
 
     private void LoadPublicKeys(Relay in) {
-        SendRelay(zsocket, RelayType.UIResultForKeyPath, "True", "0", date);
+        String filepath = in.getPrimaryData();
+        // something with filepath
+        SendRelay(zsocket, RelayType.UIResultForKeyPath, "True", filepath, date);
     }
 
     
     private void LoginNew(Relay in) {
-        SendRelay(zsocket, RelayType.UIResultForNewAccount, "True", "0", date);
+        String alias = in.getPrimaryData();
+        SendRelay(zsocket, RelayType.UIResultForNewAccount, "True", alias, date);
     }
 
     
     private void LoginExisting(Relay in) {
-        SendRelay(zsocket, RelayType.UIResultForExistingLogin, "True", "0", date);
+        String alias = in.getPrimaryData();
+
+        SendRelay(zsocket, RelayType.UIResultForExistingLogin, "True", alias, date);
     }
 
-    private void AddUser(Relay in) {
-        SendRelay(zsocket, RelayType.UIResultForAddUser, "True", "0", date);
+    private void AddContact(Relay in) {
+        String publicKey = in.getPrimaryData();
+        String alias = in.getSecondaryData();
+        SendRelay(zsocket, RelayType.UIResultForAddContact, "True", alias, date);
     }
 
-    private void RemoveUser(Relay in) {
-        SendRelay(zsocket, RelayType.UIResultForRemoveUser, "False", "0", date);
+    private void RemoveContact(Relay in) {
+        String publicKey = in.getPrimaryData();
+        String alias = in.getSecondaryData();
+        SendRelay(zsocket, RelayType.UIResultForRemoveContact, "False", alias, date);
+    }    
+    private void RenameContact(Relay in) {
+        String oldAlias = in.getPrimaryData();
+        String nextAlias = in.getSecondaryData();
+        SendRelay(zsocket, RelayType.UIResultForRenameContact, "False", oldAlias, date);
     }
-    private void GetAllUser() {
-        SendRelay(zsocket, RelayType.UIResultForAllUser, "bob,eve", "0", date);
+    private void GetAllContact() {
+        SendRelay(zsocket, RelayType.UIResultForAllContact, "bob,eve", "-", date);
     }
-    private void GetUserArchive(Relay in) {
-        SendRelay(zsocket, RelayType.UIResultForUserArchive, "a,b,c,d,e", "0", date);
+    private void GetContactArchive(Relay in) {
+        String publicKey = in.getPrimaryData();
+        String alias = in.getSecondaryData();
+        SendRelay(zsocket, RelayType.UIResultForContactArchive, "a,b,c,d,e", alias, date);
     }
 
     private void SendMessage(Relay relay) {
         
         try {
          
-            Message message = new Message(relay.getContent(), this.hashOfLastMessage, date.getTime());
+            Message message = new Message(relay.getPrimaryData(), this.hashOfLastMessage, date.getTime());
             String text = gson.toJson(message);
             String proof = RSAEncryptUtil.sign(text, this.privateKey);
             Envelope envelope = new Envelope(message, proof);
@@ -94,7 +110,7 @@ public class Core {
             // internet socket stuff
             // ..
 
-            SendRelay(zsocket, RelayType.UIResultForMessageSend, relay.getContent(), "0", this.date);   
+            SendRelay(zsocket, RelayType.UIResultForMessageSend, relay.getPrimaryData(), "0", this.date);   
         }
         catch(Exception e)
         {
@@ -174,17 +190,20 @@ public class Core {
                     case CRYPTOSetFilePathOfKey:
                         LoadPublicKeys(inputRelay); 
                         break;
-                    case CRYPTOAddUser:
-                        AddUser(inputRelay);
+                    case CRYPTOAddContact:
+                        AddContact(inputRelay);
                         break;
-                    case CRYPTORemoveUser:
-                        RemoveUser(inputRelay);
+                    case CRYPTORemoveContact:
+                        RemoveContact(inputRelay);
                         break;
-                    case CRYPTOGetAllUser:
-                        GetAllUser();
+                    case CRYPTORenameContact:
+                        RenameContact(inputRelay);
                         break;
-                    case CRYPTOGetUserArchive:
-                        GetUserArchive(inputRelay);
+                    case CRYPTOGetAllContact:
+                        GetAllContact();
+                        break;
+                    case CRYPTOGetContactArchive:
+                        GetContactArchive(inputRelay);
                         break;
                     case CRYPTOSend:
                         SendMessage(inputRelay);

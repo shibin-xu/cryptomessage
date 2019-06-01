@@ -5,18 +5,24 @@
     </md-toolbar>
      <md-tabs>
       <md-tab id="tab-home" md-label="Home" md-icon="assets/gsvg/ic_home_48px.svg">
-        <Connection v-model="connectObj" @transmit="doconnect"/>
-        <Connection v-model="disconnectObj" @transmit="dodisconnect"/>
+        <ButtonFirstToSecond v-model="connectObj" @transmit="doConnect"/><br/>
+        <ButtonSimple v-model="disconnectObj" @transmit="doDisconnect"/><br/>
+        <ButtonBox v-model="filePathObj" @transmit="doFilePath"/><br/>
+        <ButtonBox v-model="loginNewObj" @transmit="doLoginNew"/><br/>
+        <ButtonBox v-model="loginExistingObj" @transmit="doLoginExisting"/><br/>
       </md-tab>
       <md-tab id="tab-pages" md-label="My Account" md-icon="assets/gsvg/ic_perm_identity_48px.svg">
-        <Connection v-model="mystuffObj" @transmit="dostuff"/>
+        <ButtonSimple v-model="mystuffObj" @transmit="doGet"/>
       </md-tab>
-      <md-tab id="tab-posts" md-label="Add Friend" md-icon="assets/gsvg/ic_settings_ethernet_48px.svg">
-        <Connection v-model="addfriendObj" @transmit="doaddfriend"/>
-        <Connection v-model="remfriendObj" @transmit="doremfriend"/>
+      <md-tab id="tab-posts" md-label="Add Contact" md-icon="assets/gsvg/ic_settings_ethernet_48px.svg">
+        <ButtonFirstToSecond v-model="addContactObj" @transmit="doAddContact"/><br/>
+        <ButtonFirstToSecond v-model="removeContactObj" @transmit="doRemoveContact"/><br/>
+        <ButtonFirstToSecond v-model="renameContactObj" @transmit="doRenameContact"/><br/>
+        <ButtonSimple v-model="getAllContactObj" @transmit="doGetAllContact"/><br/>
+        <ButtonFirstToSecond v-model="talkToContactObj" @transmit="doTalkToContact"/><br/>
       </md-tab>
       <md-tab id="tab-favorites" md-label="Conversations" md-elevation="2" md-icon="assets/gsvg/ic_question_answer_48px.svg">
-		    <ChatBox @transmit="dosend" :contentLines="contentLines"/>
+		    <ChatBox @transmit="doSend" :contentLines="contentLines"/>
       </md-tab>
     </md-tabs>
 	</div>
@@ -24,41 +30,75 @@
 
 <script>
 import ChatBox from './components/ChatBox.vue'
-import Connection from './components/Connection.vue'
+import ButtonSimple from './components/ButtonSimple.vue'
+import ButtonFirstToSecond from './components/ButtonFirstToSecond.vue'
+import ButtonBox from './components/ButtonBox.vue'
 let nextLineId = 1
 
 export default {
 	components: {
 		ChatBox,
-		Connection
+    ButtonSimple,
+    ButtonFirstToSecond,
+    ButtonBox
   },
   data () {
     return {
       myData: 2,
       connectObj:  
         {
-          word: 'Connect',
-          addr: '123',
+          first: 'Connect',
+          second: '123.1',
         },
       disconnectObj:
         {
-          word: 'Disconnect',
-          addr: '123',
+          first: 'Disconnect',
+          second: '-',
+        },
+      filePathObj:
+        {
+          first: 'Enter File Path',
+          second: 'c:',
+        },
+      loginNewObj:
+        {
+          first: 'Create New Login',
+          second: 'alice',
+        },
+      loginExistingObj:
+        {
+          first: 'Login Existing',
+          second: 'alice',
+        },
+      addContactObj:
+        {
+          first: 'Add Contact',
+          second: 'bob',
+        },
+      removeContactObj:
+        {
+          first: 'Remove Contact',
+          second: 'bob',
+        },
+      renameContactObj:
+        {
+          first: 'Rename Contact',
+          second: 'bob',
+        },
+      getAllContactObj:
+        {
+          first: 'Get All Contacts',
+          second: '-',
+        },
+      talkToContactObj:
+        {
+          first: 'Talk To Contact',
+          second: 'bob',
         },
       mystuffObj:
         {
-          word: 'mystuff',
-          addr: '123',
-        },
-      addfriendObj:
-        {
-          word: 'addfriend',
-          addr: '123',
-        },
-      remfriendObj:
-        {
-          word: 'remfriend',
-          addr: '123',
+          first: 'Rx Msg',
+          second: '-',
         },
       contentLines: [
         {
@@ -78,27 +118,25 @@ export default {
   },
   mounted () {
       setInterval(() => { this.$electron.ipcRenderer.send('ping') }, 1000)
-      this.$electron.ipcRenderer.on('elecConfirmConnect', (_, data) => {
-        this.disconnectObj.addr = data;
+      this.$electron.ipcRenderer.on('UIResultForConnect', (cmd, primary, secondary, timestamp) => {
+        this.disconnectObj.addr = primary;
         this.connectObj.addr = '--';
       });
-      this.$electron.ipcRenderer.on('elecConfirmDisconnect', (_, data) => {
-        this.connectObj.addr = data;
+      this.$electron.ipcRenderer.on('UIResultForDisconnect',(cmd, primary, secondary, timestamp) => {
+        this.connectObj.addr = primary;
         this.disconnectObj.addr = '--';
       });
-      this.$electron.ipcRenderer.on('elecConfirmSend', (_, data) => {
-        this.doremfriend(data)
+      this.$electron.ipcRenderer.on('UIResultForMessageSend',(cmd, primary, secondary, timestamp) => {
+        
       });
-      this.$electron.ipcRenderer.on('elecRecieve', (_, data) => {
+      this.$electron.ipcRenderer.on('UIMessageReceive', (cmd, primary, secondary, timestamp) => {
         this.contentLines.push({
           id: nextLineId++,
-          text: data,
+          text: primary,
+          alias: secondary,
           isConfirmed: true,
           fromSelf: false
         })
-      });
-      this.$electron.ipcRenderer.on('elecRaw', (_, data) => {
-        
       });
   },
   methods: {
@@ -109,29 +147,49 @@ export default {
           this.$electron.ipcRenderer.send(dataName);
       }
     },
-    doconnect (addr) {
-      this.sendData("connect",addr)
+    doConnect (addr) {
+      this.sendData("doConnect",addr)
     },
-    dodisconnect (addr) {
-      this.sendData("disconnect",addr)
+    doDisconnect () {
+      this.sendData("doDisconnect")
     },
-    dosend (words) {
+    doFilePath (words) {
+      this.sendData("doFilePath",words)
+    },
+    doLoginNew (words) {
+      this.sendData("doLoginNew",words)
+    },
+    doLoginExisting (words) {
+      this.sendData("doLoginExisting",words)
+    },
+    doAddContact (words) {
+      this.sendData("doAddContact",words)
+    },
+    doRemoveContact (words) {
+      this.sendData("doRemoveContact",words)
+    },
+    doRenameContact (words) {
+      this.sendData("doRenameContact",words)
+    },
+    doGetAllContact () {
+      this.sendData("doGetAllContact")
+    },
+    doTalkToContact (words) {
+      this.sendData("doTalkToContact",words)
+    },
+    doSend (words) {
+      let secondary = "self";
       this.contentLines.push({
           id: nextLineId++,
           text: words,
+          alias: secondary,
           isConfirmed: false,
           fromSelf: true
         })
-      this.sendData("send",words)
+      this.sendData("doSend",words)
     },
-    dostuff (words) {
-      this.sendData("get",words)
-    },
-    doaddfriend (words) {
-      this.sendData("add",words)
-    },
-    doremfriend (words) {
-      this.sendData("rem",words)
+    doGet () {
+      this.sendData("doGet")
     }
   }
 }

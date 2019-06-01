@@ -15,6 +15,7 @@ let zmqClient;
 
 const isDevMode = process.execPath.match(/[\\/]electron/);
 
+let d = new Date();
 if (isDevMode) enableLiveReload();
 
 const createWindow = async () => {
@@ -96,21 +97,19 @@ function spawnCore() {
   
 }
 
-function makeJson(a,b,c) {
-  let obj = { relayType:a, relayContent:b, time:c }
+function makeJson(a,b,c,t) {
+  let obj = { relayType:a, primary:b, secondary:c,  time:t }
   let result = JSON.stringify(obj);
   return result;
 }
 function readJson(raw) {
-  let cmd = "hm"
-  let payload = "paylo"
-  let timestamp = 1
   let rawstring = raw.toString('ascii')
   let obj = JSON.parse(rawstring);
-  cmd = obj["relayType"]
-  payload = obj["relayContent"]
-  timestamp = obj["time"]
-  return [cmd,payload,timestamp]
+  let cmd = obj["relayType"];
+  let primary = obj["primary"];
+  let secondary = obj["secondary"];
+  let timestamp = obj["time"];
+  return [cmd,primary,secondary,timestamp]
 }
 function connectToZmq() {
   util.log("zmq starting")
@@ -119,55 +118,59 @@ function connectToZmq() {
   ipcMain.on('ping', (event, val) => {
     event.sender.send('pong', Math.random())
   });
-  ipcMain.on('connect', () => {
-    let blob = makeJson('CRYPTOOpenConnectionToServer')
+  ipcMain.on('doConnect', () => {
+    let blob = makeJson('CRYPTOOpenConnectionToServer', "-", "-", d.getTime())
     zmqClient.send(blob)
   });
 
-  ipcMain.on('disconnect', () => {
-    let blob = makeJson('CRYPTODisconnectFromServer')
+  ipcMain.on('doDisconnect', () => {
+    let blob = makeJson('CRYPTODisconnectFromServer', "-", "-", d.getTime())
     zmqClient.send(blob)
   });
 
-  ipcMain.on('login-new', (event, val) => {
-    let blob = makeJson('CRYPTOLoginNewAccount', val)
+  ipcMain.on('doFilePath', (event, val) => {
+    let blob = makeJson('CRYPTOSetFilePathOfKey', val, "-", d.getTime())
     zmqClient.send(blob)
   });
   
-  ipcMain.on('login-existing', (event, val) => {
-    let blob = makeJson('CRYPTOLoginExistingAccount', val)
+  ipcMain.on('doLoginNew', (event, val) => {
+    let blob = makeJson('CRYPTOLoginNewAccount', val, "alice", d.getTime())
     zmqClient.send(blob)
   });
   
-  ipcMain.on('set-file-path', (event, val) => {
-    let blob = makeJson('CRYPTOSetFilePathOfKey', val)
+  ipcMain.on('doLoginExisting', (event, val) => {
+    let blob = makeJson('CRYPTOLoginExistingAccount', val, "alice", d.getTime())
     zmqClient.send(blob)
   });
   
-  ipcMain.on('add-user', (event, val) => {
-    let blob = makeJson('CRYPTOAddUser', val)
+  ipcMain.on('doAddContact', (event, val) => {
+    let blob = makeJson('CRYPTOAddContact', val, "bob", d.getTime())
     zmqClient.send(blob)
   });
-  ipcMain.on('rem-user', (event, val) => {
-    let blob = makeJson('CRYPTORemoveUser', val)
-    zmqClient.send(blob)
-  });
-  
-  ipcMain.on('get-all-user', () => {
-    let blob = makeJson('CRYPTOGetAllUser')
+  ipcMain.on('doRemoveContact', (event, val) => {
+    let blob = makeJson('CRYPTORemoveContact', val, "bob", d.getTime())
     zmqClient.send(blob)
   });
   
-  ipcMain.on('get-archive-user', (event, val) => {
-    let blob = makeJson('CRYPTOGetUserArchive', val)
+  ipcMain.on('doRenameContact', (event, val) => {
+    let blob = makeJson('CRYPTORenameContact', val, "chuck", d.getTime())
     zmqClient.send(blob)
   });
-  ipcMain.on('send', (event, val) => {
-    let blob = makeJson('CRYPTOSend',val)
+  ipcMain.on('doGetAllContact', () => {
+    let blob = makeJson('CRYPTOGetAllContact',"-","-", d.getTime())
     zmqClient.send(blob)
   });
-  ipcMain.on('get', () => {
-    let blob = makeJson('CRYPTOFakeReceive')
+  
+  ipcMain.on('doTalkToContact', (event, val) => {
+    let blob = makeJson('CRYPTOGetContactArchive', val,"bob", d.getTime())
+    zmqClient.send(blob)
+  });
+  ipcMain.on('doSend', (event, val) => {
+    let blob = makeJson('CRYPTOSend',val,"bob", d.getTime())
+    zmqClient.send(blob)
+  });
+  ipcMain.on('doGet', () => {
+    let blob = makeJson('CRYPTOFakeReceive',"fake","bob", d.getTime())
     zmqClient.send(blob)
   });
 
@@ -175,27 +178,10 @@ function connectToZmq() {
   zmqClient.on(`message`, function (raw) {         
       let json = readJson(raw);
       let cmd = json[0]
-      let payload = json[1]
-      let timestamp = json[2]
-      if(cmd == 'UIResultForConnect')
-      {
-        mainWindow.webContents.send('elecConfirmConnect', payload);
-      }
-      else if(cmd == 'UIResultForDisconnect')
-      {
-        mainWindow.webContents.send('elecConfirmDisconnect', payload);
-      }
-      else if(cmd == 'UIResultForMessageSend')
-      {
-        mainWindow.webContents.send('elecConfirmSend', payload);
-      }
-      else if(cmd == 'UIMessageReceive')
-      {
-        mainWindow.webContents.send('elecRecieve', payload);
-      }
-      else
-      {
-        mainWindow.webContents.send('elecRaw', raw);
-      }
+      let primary = json[1]
+      let secondary = json[2]
+      let timestamp = json[3]
+      mainWindow.webContents.send(cmd, primary, secondary, timestamp);
+      
   });     
 }

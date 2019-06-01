@@ -5,14 +5,14 @@ import java.util.Objects;
 public class Relay {
 
     private RelayType relayType;      
-    private String relayContent;   
-    private String senderID;
+    private String primary;      
+    private String secondary;   
     private long time;             
 
-    public Relay(RelayType relayType, String relayContent, String senderID, long time) {
+    public Relay(RelayType relayType, String primary, String secondary, long time) {
         this.relayType = relayType;
-        this.relayContent = relayContent;
-        this.senderID = senderID;
+        this.primary = primary;
+        this.secondary = secondary;
         this.time = time;
     }
 
@@ -20,12 +20,12 @@ public class Relay {
         return this.relayType;
     }
 
-    public String getContent() {
-        return this.relayContent;
+    public String getPrimaryData() {
+        return this.primary;
     }
 
-    public String getSenderID() {
-        return this.senderID;
+    public String getSecondaryData() {
+        return this.secondary;
     }
 
     public long getTime() {
@@ -36,8 +36,8 @@ public class Relay {
     public String toString() {
         return "Relay{" +
                 "type='" + relayType + '\'' +
-                ", content='" + relayContent + '\'' +
-                ", sender='" + senderID + '\'' +
+                ", primary='" + primary + '\'' +
+                ", secondary='" + secondary + '\'' +
                 ", time=" + time +
                 '}';
     }

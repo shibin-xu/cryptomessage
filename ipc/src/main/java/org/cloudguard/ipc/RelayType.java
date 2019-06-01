@@ -6,11 +6,12 @@ public enum RelayType {
     UIResultForKeyPath,
     UIResultForNewAccount,
     UIResultForExistingLogin,
-    UIResultForAddUser,
-    UIResultForRemoveUser,
+    UIResultForAddContact,
+    UIResultForRemoveContact,
+    UIResultForRenameContact,
 
-    UIResultForAllUser,
-    UIResultForUserArchive,
+    UIResultForAllContact,
+    UIResultForContactArchive,
     
     UIResultForMessageSend,
     UIMessageReceive,
@@ -20,11 +21,12 @@ public enum RelayType {
     CRYPTOLoginNewAccount,
     CRYPTOLoginExistingAccount,
     CRYPTOSetFilePathOfKey,
-    CRYPTOAddUser,
-    CRYPTORemoveUser,
+    CRYPTOAddContact,
+    CRYPTORemoveContact,
+    CRYPTORenameContact,
     
-    CRYPTOGetAllUser,
-    CRYPTOGetUserArchive,
+    CRYPTOGetAllContact,
+    CRYPTOGetContactArchive,
 
     CRYPTOSend,
 
