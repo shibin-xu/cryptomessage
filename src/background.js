@@ -25,7 +25,7 @@ const createWindow = async () => {
   util.log("window starting")
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 800,
+    width: 900,
     height: 770,
   });
 
@@ -40,7 +40,7 @@ const createWindow = async () => {
   // Open the DevTools.
   if (isDevMode) {
     
-    mainWindow.webContents.openDevTools();
+    //mainWindow.webContents.openDevTools();
     await installExtension(VUEJS_DEVTOOLS);
   }
 
@@ -114,10 +114,7 @@ function readJson(raw) {
 function connectToZmq() {
   util.log("zmq starting")
   zmqClient = zeromq.socket('req')
-  zmqClient.connect(`tcp://127.0.0.1:5555`);   
-  ipcMain.on('ping', (event, val) => {
-    event.sender.send('pong', Math.random())
-  });
+  zmqClient.connect(`tcp://127.0.0.1:5555`);  
   ipcMain.on('doLoginAccount', (event, valone, valtwo) => {
     let blob = makeJson('CRYPTOLoginExistingAccount', valone, valtwo, d.getTime())
     zmqClient.send(blob)

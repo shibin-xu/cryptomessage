@@ -1,11 +1,10 @@
 import Vue from 'vue'
 import App from './App'
-
-import VueMaterial from 'vue-material'
+import Vuetify from 'vuetify'
 
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'))
 Vue.config.productionTip = false
 
-Vue.use(VueMaterial)
+Vue.use(Vuetify)
 
 new Vue(App).$mount('#app')

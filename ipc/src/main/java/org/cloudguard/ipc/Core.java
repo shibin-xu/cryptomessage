@@ -140,7 +140,7 @@ public class Core {
             Message expected = new Message(body, this.hashOfLastMessage, date.getTime());
             String serialized = gson.toJson(expected);
             Message actual = gson.fromJson(serialized, Message.class);
-            String origin = "3434";
+            String origin = "abdf23";
 
             SendRelay(zsocket, RelayType.UIMessageReceive, actual.getBody(), origin, date);
         }
