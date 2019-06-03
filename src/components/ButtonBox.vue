@@ -2,7 +2,7 @@
   <md-field>
       <label>{{local.first}}</label>
 		  <md-input v-model="draftText"></md-input>
-      <md-button class="md-raised md-accent" v-on:click="emit()">Go</md-button>
+      <md-button class="md-raised md-accent" v-on:click="go()">Go</md-button>
    </md-field>
 </template>
 
@@ -23,7 +23,7 @@ export default {
     update(key, value) {
       
     },
-    emit: function () {
+    go: function () {
       this.$emit('transmit', this.local.second)
     }
   },

@@ -118,42 +118,35 @@ function connectToZmq() {
   ipcMain.on('ping', (event, val) => {
     event.sender.send('pong', Math.random())
   });
-  ipcMain.on('doConnect', () => {
-    let blob = makeJson('CRYPTOOpenConnectionToServer', "-", "-", d.getTime())
+  ipcMain.on('doLoginAccount', (event, valone, valtwo) => {
+    let blob = makeJson('CRYPTOLoginExistingAccount', valone, valtwo, d.getTime())
     zmqClient.send(blob)
   });
-
+  ipcMain.on('doNewAccount',(event, valone, valtwo) => {
+    let blob = makeJson('CRYPTOLoginNewAccount', valone, valtwo, d.getTime())
+    zmqClient.send(blob)
+  });
   ipcMain.on('doDisconnect', () => {
     let blob = makeJson('CRYPTODisconnectFromServer', "-", "-", d.getTime())
     zmqClient.send(blob)
   });
 
-  ipcMain.on('doFilePath', (event, val) => {
-    let blob = makeJson('CRYPTOSetFilePathOfKey', val, "-", d.getTime())
+  ipcMain.on('doFilePath', (event, valone, valtwo) => {
+    let blob = makeJson('CRYPTOSetFilePathOfKey', valone, valtwo, d.getTime())
     zmqClient.send(blob)
   });
   
-  ipcMain.on('doLoginNew', (event, val) => {
-    let blob = makeJson('CRYPTOLoginNewAccount', val, "alice", d.getTime())
+  ipcMain.on('doAddContact', (event, valone, valtwo) => {
+    let blob = makeJson('CRYPTOAddContact', valone, valtwo, d.getTime())
+    zmqClient.send(blob)
+  });
+  ipcMain.on('doRemoveContact', (event, valone, valtwo) => {
+    let blob = makeJson('CRYPTORemoveContact', valone, valtwo, d.getTime())
     zmqClient.send(blob)
   });
   
-  ipcMain.on('doLoginExisting', (event, val) => {
-    let blob = makeJson('CRYPTOLoginExistingAccount', val, "alice", d.getTime())
-    zmqClient.send(blob)
-  });
-  
-  ipcMain.on('doAddContact', (event, val) => {
-    let blob = makeJson('CRYPTOAddContact', val, "bob", d.getTime())
-    zmqClient.send(blob)
-  });
-  ipcMain.on('doRemoveContact', (event, val) => {
-    let blob = makeJson('CRYPTORemoveContact', val, "bob", d.getTime())
-    zmqClient.send(blob)
-  });
-  
-  ipcMain.on('doRenameContact', (event, val) => {
-    let blob = makeJson('CRYPTORenameContact', val, "chuck", d.getTime())
+  ipcMain.on('doRenameContact', (event, valone, valtwo) => {
+    let blob = makeJson('CRYPTORenameContact', valone, valtwo, d.getTime())
     zmqClient.send(blob)
   });
   ipcMain.on('doGetAllContact', () => {
@@ -161,12 +154,12 @@ function connectToZmq() {
     zmqClient.send(blob)
   });
   
-  ipcMain.on('doTalkToContact', (event, val) => {
-    let blob = makeJson('CRYPTOGetContactArchive', val,"bob", d.getTime())
+  ipcMain.on('doTalkToContact', (event, valone, valtwo) => {
+    let blob = makeJson('CRYPTOGetContactArchive', valone, valtwo, d.getTime())
     zmqClient.send(blob)
   });
-  ipcMain.on('doSend', (event, val) => {
-    let blob = makeJson('CRYPTOSend',val,"bob", d.getTime())
+  ipcMain.on('doSend', (event, valone, valtwo) => {
+    let blob = makeJson('CRYPTOSend', valone, valtwo, d.getTime())
     zmqClient.send(blob)
   });
   ipcMain.on('doGet', () => {

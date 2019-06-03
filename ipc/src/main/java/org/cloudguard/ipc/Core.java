@@ -1,6 +1,9 @@
 package org.cloudguard.ipc;
 
 import com.google.gson.Gson;
+
+import org.cloudguard.commons.Response;
+import org.cloudguard.commons.ClientUtil;
 import org.cloudguard.crypto.CryptoUtil;
 import org.cloudguard.crypto.PasswordUtil;
 import org.cloudguard.crypto.RSAEncryptUtil;
@@ -36,12 +39,33 @@ public class Core {
         zsocket.send(serialized.getBytes(ZMQ.CHARSET), 0);
     }
 
-    private void ConnectToServer() {
-        // internet socket stuff
-        // ..
+    private void LoginNew(Relay in) {
+        String email = in.getPrimaryData();
+        String password = in.getSecondaryData();
+        try {
+            Response response = ClientUtil.register(email, "first", "last", password);
+            if(response != null) {
+                SendRelay(zsocket, RelayType.UIResultForNewAccount, response.getClassName(), response.getJson(), date);
+            }
+        } catch(Exception e) {
 
-        SendRelay(zsocket, RelayType.UIResultForConnect, "4.4.4.255", "-", date);
-                        
+            System.out.println("LoginNew: " + e);
+        }
+    }
+
+    private void LoginExisting(Relay in) {
+        String email = in.getPrimaryData();
+        String password = in.getSecondaryData();
+        try {
+            Response response = ClientUtil.login(email, password);
+            if(response != null) {
+                SendRelay(zsocket, RelayType.UIResultForExistingLogin, response.getClassName(), response.getJson(), date);
+            }
+        }
+        catch(Exception e) {
+
+            System.out.println("LoginExisting: " + e);
+        }
     }
 
     private void DisconnectFromServer() {
@@ -59,17 +83,6 @@ public class Core {
     }
 
     
-    private void LoginNew(Relay in) {
-        String alias = in.getPrimaryData();
-        SendRelay(zsocket, RelayType.UIResultForNewAccount, "True", alias, date);
-    }
-
-    
-    private void LoginExisting(Relay in) {
-        String alias = in.getPrimaryData();
-
-        SendRelay(zsocket, RelayType.UIResultForExistingLogin, "True", alias, date);
-    }
 
     private void AddContact(Relay in) {
         String publicKey = in.getPrimaryData();
@@ -175,17 +188,14 @@ public class Core {
                 {
                     default:
                         break;
-                    case CRYPTOOpenConnectionToServer:
-                        ConnectToServer();
-                        break;
-                    case CRYPTODisconnectFromServer:
-                        DisconnectFromServer();
-                        break;
                     case CRYPTOLoginNewAccount:
                         LoginNew(inputRelay); 
                         break;
                     case CRYPTOLoginExistingAccount:
                         LoginExisting(inputRelay); 
+                        break;
+                    case CRYPTODisconnectFromServer:
+                        DisconnectFromServer();
                         break;
                     case CRYPTOSetFilePathOfKey:
                         LoadPublicKeys(inputRelay); 

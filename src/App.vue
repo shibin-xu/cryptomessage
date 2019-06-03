@@ -5,11 +5,8 @@
     </md-toolbar>
      <md-tabs>
       <md-tab id="tab-home" md-label="Home" md-icon="assets/gsvg/ic_home_48px.svg">
-        <ButtonFirstToSecond v-model="connectObj" @transmit="doConnect"/><br/>
-        <ButtonSimple v-model="disconnectObj" @transmit="doDisconnect"/><br/>
-        <ButtonBox v-model="filePathObj" @transmit="doFilePath"/><br/>
-        <ButtonBox v-model="loginNewObj" @transmit="doLoginNew"/><br/>
-        <ButtonBox v-model="loginExistingObj" @transmit="doLoginExisting"/><br/>
+        <CardHomeKeys @transmit="doFilePath" :labelTitle="fileLabelTitle"/><br/>
+        <CardHomeConnect @loginaccount="doLoginAccount" @newaccount="doNewAccount" @disconnect="doDisconnect"/>
       </md-tab>
       <md-tab id="tab-pages" md-label="My Account" md-icon="assets/gsvg/ic_perm_identity_48px.svg">
         <ButtonSimple v-model="mystuffObj" @transmit="doGet"/>
@@ -32,6 +29,8 @@
 import ChatBox from './components/ChatBox.vue'
 import ButtonSimple from './components/ButtonSimple.vue'
 import ButtonFirstToSecond from './components/ButtonFirstToSecond.vue'
+import CardHomeConnect from './components/CardHomeConnect.vue'
+import CardHomeKeys from './components/CardHomeKeys.vue'
 import ButtonBox from './components/ButtonBox.vue'
 let nextLineId = 1
 
@@ -40,26 +39,14 @@ export default {
 		ChatBox,
     ButtonSimple,
     ButtonFirstToSecond,
+    CardHomeConnect,
+    CardHomeKeys,
     ButtonBox
   },
   data () {
     return {
       myData: 2,
-      connectObj:  
-        {
-          first: 'Connect',
-          second: '123.1',
-        },
-      disconnectObj:
-        {
-          first: 'Disconnect',
-          second: '-',
-        },
-      filePathObj:
-        {
-          first: 'Enter File Path',
-          second: 'c:',
-        },
+      fileLabelTitle: 'Path to Public Key:',
       loginNewObj:
         {
           first: 'Create New Login',
@@ -117,14 +104,11 @@ export default {
     }
   },
   mounted () {
-      setInterval(() => { this.$electron.ipcRenderer.send('ping') }, 1000)
       this.$electron.ipcRenderer.on('UIResultForConnect', (cmd, primary, secondary, timestamp) => {
-        this.disconnectObj.addr = primary;
-        this.connectObj.addr = '--';
+ 
       });
       this.$electron.ipcRenderer.on('UIResultForDisconnect',(cmd, primary, secondary, timestamp) => {
-        this.connectObj.addr = primary;
-        this.disconnectObj.addr = '--';
+
       });
       this.$electron.ipcRenderer.on('UIResultForMessageSend',(cmd, primary, secondary, timestamp) => {
         
@@ -140,27 +124,29 @@ export default {
       });
   },
   methods: {
-    sendData(dataName, value) {
-      if (value) {
-          this.$electron.ipcRenderer.send(dataName, value);
-      } else {
-          this.$electron.ipcRenderer.send(dataName);
+    sendData(dataName, primary, secondary) {
+      console.log(dataName);
+      console.log(primary);
+      console.log(secondary);
+      this.$electron.ipcRenderer.send(dataName, primary, secondary);
+    },
+    doLoginAccount (login, password) {
+      if(login.length > 0) 
+      {
+        this.sendData("doLoginAccount",login, password);
       }
     },
-    doConnect (addr) {
-      this.sendData("doConnect",addr)
+    doNewAccount (login, password) {
+      if(login.length > 0) 
+      {
+        this.sendData("doNewAccount",login, password);
+      }
     },
     doDisconnect () {
-      this.sendData("doDisconnect")
+      this.sendData("doDisconnect");
     },
-    doFilePath (words) {
-      this.sendData("doFilePath",words)
-    },
-    doLoginNew (words) {
-      this.sendData("doLoginNew",words)
-    },
-    doLoginExisting (words) {
-      this.sendData("doLoginExisting",words)
+    doFilePath (filename, pubkey) {
+      this.sendData("doFilePath",filename, pubkey)
     },
     doAddContact (words) {
       this.sendData("doAddContact",words)
