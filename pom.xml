@@ -11,7 +11,6 @@
   <modules>
     <module>crypto</module>
     <module>server</module>
-    <module>ui</module>
     <module>commons</module>
     <module>ipc</module>
   </modules>
