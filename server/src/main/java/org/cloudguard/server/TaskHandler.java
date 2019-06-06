@@ -7,9 +7,8 @@ import org.cloudguard.crypto.*;
 import javax.net.ssl.SSLSocket;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.security.KeyPair;
-import java.security.PrivateKey;
-import java.security.PublicKey;
+import java.io.IOException;
+import java.security.*;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.List;
@@ -64,6 +63,10 @@ public class TaskHandler extends Thread{
 				case "org.cloudguard.commons.PublicKeyRequest":
 					queryuser(request);
 					break;
+				case "org.cloudguard.commons.LoginPrepareRequest":
+					handleLoginPrepareRequest(request);
+					break;
+
 			}
 
 			out.close();
@@ -73,6 +76,19 @@ public class TaskHandler extends Thread{
 			logger.error("Handling request failed\n" + "Message: " + message + "\n" + "Exception: " + e.toString());
 			logger.error(e.toString());
 		}
+	}
+
+	public void handleLoginPrepareRequest(Request request) throws
+			NoSuchProviderException,
+			NoSuchAlgorithmException,
+			IOException {
+		String nonce = generateCookie();
+		LoginPrepareResponse loginPrepareResponse = new LoginPrepareResponse(nonce);
+
+		Gson gson = new Gson();
+		LoginPrepareRequest loginPrepareRequest = gson.fromJson(request.getJson(), LoginPrepareRequest.class);
+		Response response = new Response(loginPrepareRequest.getClass().getName(), gson.toJson(loginPrepareRequest));
+		out.writeUTF(gson.toJson(response));
 	}
 
 
