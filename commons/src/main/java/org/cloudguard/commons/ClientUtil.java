@@ -22,13 +22,16 @@ public class ClientUtil {
 
 
     private static void init(){
-	try{
-        if (serverName == null){
-           Scanner scanIn = new Scanner(new File("NET.config"));
-	   serverName = scanIn.nextLine();
-	}
-	}catch(Exception e){
-	}
+        try{
+            if (serverName == null){
+                Scanner scanIn = new Scanner(new File("NET.config"));
+                serverName = scanIn.nextLine();
+            }
+        } catch (Exception e){ }
+    }
+
+    public static Response getResponse(Request request) throws IOException {
+        return askAndReceive(establishConnection(), request);
     }
 
     public static Response register(String email, String firstName, String lastName, String password) throws IOException {
