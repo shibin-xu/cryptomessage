@@ -1,10 +1,7 @@
 package org.cloudguard.server;
 
 import com.google.gson.Gson;
-import org.cloudguard.commons.LoginPrepareRequest;
-import org.cloudguard.commons.LoginPrepareResponse;
-import org.cloudguard.commons.Request;
-import org.cloudguard.commons.Response;
+import org.cloudguard.commons.*;
 import org.cloudguard.crypto.CryptoUtil;
 import org.cloudguard.crypto.RSAEncryptUtil;
 
@@ -25,7 +22,9 @@ public class ServerTest {
     public static void main(String[] args) throws
             IOException,
             NoSuchAlgorithmException,
-            NoSuchProviderException {
+            NoSuchProviderException,
+            SignatureException,
+            InvalidKeyException {
         System.out.println("ServerTest");
 
 //        String email = prompt("Please enter your email: ");
@@ -49,6 +48,16 @@ public class ServerTest {
         LoginPrepareResponse loginPrepareResponse = gson.fromJson(response.getJson(), LoginPrepareResponse.class);
 
         System.out.println("loginPrepareResponse = " + loginPrepareResponse);
+        System.out.println();
+
+        String concatenateNonce = nonce + loginPrepareRequest.getNonce();
+        String signature = RSAEncryptUtil.sign(concatenateNonce, pri);
+        LoginFinishRequest loginFinishRequest = new LoginFinishRequest(publicKey, signature);
+        request = new Request(loginFinishRequest.getClass().getName(), gson.toJson(loginFinishRequest));
+        response = getResponse(request);
+        LoginFinishResponse loginFinishResponse = gson.fromJson(response.getJson(), LoginFinishResponse.class);
+        System.out.println("loginFinishResponse = " + loginFinishResponse);
+        System.out.println();
     }
 
     private static String prompt(String message) {

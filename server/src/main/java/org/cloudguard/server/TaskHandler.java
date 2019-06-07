@@ -8,7 +8,9 @@ import javax.net.ssl.SSLSocket;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.List;
@@ -25,16 +27,18 @@ public class TaskHandler extends Thread{
 	private DataOutputStream out;
 	private String message;
 	private ConcurrentMap<String, String> cookies;
+	private ConcurrentMap<String, String> publicKey2Nonce;
 
 	private Connection sqlCon = null;
 	private PreparedStatement sqlPrep = null;
 	private String sqlpass;
 
-	public TaskHandler(SSLSocket con, String pass, ConcurrentMap<String, String> cookies) {
+	public TaskHandler(SSLSocket con, String pass, ConcurrentMap<String, String> cookies, ConcurrentMap<String, String> publicKey2Nonce) {
 		try{
 			this.sqlpass = pass;
 			this.connection = con;
 			this.cookies = cookies;
+			this.publicKey2Nonce = publicKey2Nonce;
 			this.in = new DataInputStream(con.getInputStream());
 			this.out = new DataOutputStream(con.getOutputStream());
 		}catch(Exception e){
@@ -66,7 +70,9 @@ public class TaskHandler extends Thread{
 				case "org.cloudguard.commons.LoginPrepareRequest":
 					handleLoginPrepareRequest(request);
 					break;
-
+				case "org.cloudguard.commons.LoginFinishRequest":
+					handleLoginFinishRequest(request);
+					break;
 			}
 
 			out.close();
@@ -87,10 +93,42 @@ public class TaskHandler extends Thread{
 
 		Gson gson = new Gson();
 		LoginPrepareRequest loginPrepareRequest = gson.fromJson(request.getJson(), LoginPrepareRequest.class);
-		Response response = new Response(loginPrepareRequest.getClass().getName(), gson.toJson(loginPrepareRequest));
+		String publicKey = loginPrepareRequest.getPublicKey();
+		this.publicKey2Nonce.put(publicKey, loginPrepareRequest.getNonce() + nonce);
+		Response response = new Response(loginPrepareResponse.getClass().getName(), gson.toJson(loginPrepareResponse));
 		out.writeUTF(gson.toJson(response));
 	}
 
+	public void handleLoginFinishRequest(Request request) throws
+			InvalidKeySpecException,
+			NoSuchAlgorithmException,
+			SignatureException,
+			NoSuchProviderException,
+			InvalidKeyException,
+			IOException {
+		Gson gson = new Gson();
+		LoginFinishRequest loginFinishRequest = gson.fromJson(request.getJson(), LoginFinishRequest.class);
+		String publicKey = loginFinishRequest.getPublicKey();
+		PublicKey pub = RSAEncryptUtil.getPublicKeyFromString(publicKey);
+		String signature = loginFinishRequest.getSignature();
+
+		String nonce = this.publicKey2Nonce.get(pub);
+		if (nonce == null)
+			return;
+		else
+			this.publicKey2Nonce.remove(pub);
+
+		boolean verified = RSAEncryptUtil.verify(nonce, signature, pub);
+		String cookie = generateCookie();
+
+		LoginFinishResponse loginFinishResponse = new LoginFinishResponse(verified, "");
+		if (verified) {
+			loginFinishResponse.setToken(cookie);
+		}
+
+		Response response = new Response(loginFinishResponse.getClass().getName(), gson.toJson(loginFinishResponse));
+		out.writeUTF(gson.toJson(response));
+	}
 
 	public void register(Request request){
 		try{

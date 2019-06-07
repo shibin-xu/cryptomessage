@@ -39,6 +39,7 @@ public class ServerOps {
 
 		CryptoUtil.init();
 		ConcurrentMap<String, String> cookies = new ConcurrentHashMap<String, String>();
+		ConcurrentMap<String, String> publicKey2Nonce = new ConcurrentHashMap<>();
 
 		CookieConsumer cookieConsumer = new CookieConsumer(cookies);
 		cookieConsumer.start();
@@ -47,7 +48,7 @@ public class ServerOps {
 			try{
 				logger.info("Waiting for connection .....");
 				SSLSocket con = (SSLSocket) serverSoc.accept();
-				TaskHandler task = new TaskHandler(con, sqlpass, cookies);
+				TaskHandler task = new TaskHandler(con, sqlpass, cookies, publicKey2Nonce);
 				logger.info("New Connection has been accepted " + con);
 				task.start();
 			}catch(Exception e){
