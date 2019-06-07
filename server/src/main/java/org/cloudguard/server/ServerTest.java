@@ -7,6 +7,7 @@ import org.cloudguard.crypto.RSAEncryptUtil;
 
 import java.io.IOException;
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Scanner;
 
 import static org.cloudguard.commons.ClientUtil.getResponse;
@@ -24,34 +25,27 @@ public class ServerTest {
             NoSuchAlgorithmException,
             NoSuchProviderException,
             SignatureException,
-            InvalidKeyException {
+            InvalidKeyException, InvalidKeySpecException {
         System.out.println("ServerTest");
-
-//        String email = prompt("Please enter your email: ");
-//        String password = prompt("Please enter your password: ");
-//
-//        Response response = ClientUtil.login(email, password);
-//        System.out.println(response);
-
         gson = new Gson();
         CryptoUtil.init();
         keyPair = RSAEncryptUtil.generateKey();
         pub = keyPair.getPublic();
         pri = keyPair.getPrivate();
 
-        String nonce = generateCookie();
+        String n1 = generateCookie();
         String publicKey = getKeyAsString(pub);
 
-        LoginPrepareRequest loginPrepareRequest = new LoginPrepareRequest(publicKey, nonce);
+        LoginPrepareRequest loginPrepareRequest = new LoginPrepareRequest(publicKey, n1);
         Request request = new Request(loginPrepareRequest.getClass().getName(), gson.toJson(loginPrepareRequest));
         Response response = getResponse(request);
         LoginPrepareResponse loginPrepareResponse = gson.fromJson(response.getJson(), LoginPrepareResponse.class);
-
         System.out.println("loginPrepareResponse = " + loginPrepareResponse);
         System.out.println();
 
-        String concatenateNonce = nonce + loginPrepareRequest.getNonce();
-        String signature = RSAEncryptUtil.sign(concatenateNonce, pri);
+        String n2 = loginPrepareResponse.getNonce();
+        String n1n2 = n1 + n2;
+        String signature = RSAEncryptUtil.sign(n1n2, pri);
         LoginFinishRequest loginFinishRequest = new LoginFinishRequest(publicKey, signature);
         request = new Request(loginFinishRequest.getClass().getName(), gson.toJson(loginFinishRequest));
         response = getResponse(request);

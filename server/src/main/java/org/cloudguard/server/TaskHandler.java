@@ -112,11 +112,11 @@ public class TaskHandler extends Thread{
 		PublicKey pub = RSAEncryptUtil.getPublicKeyFromString(publicKey);
 		String signature = loginFinishRequest.getSignature();
 
-		String nonce = this.publicKey2Nonce.get(pub);
+		String nonce = this.publicKey2Nonce.get(publicKey);
 		if (nonce == null)
 			return;
 		else
-			this.publicKey2Nonce.remove(pub);
+			this.publicKey2Nonce.remove(publicKey);
 
 		boolean verified = RSAEncryptUtil.verify(nonce, signature, pub);
 		String cookie = generateCookie();
