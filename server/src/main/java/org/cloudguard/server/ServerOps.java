@@ -44,14 +44,16 @@ public class ServerOps {
 		ConcurrentMap<String, String> publicKey2Nonce = new ConcurrentHashMap<>();
 		ConcurrentMap<String, List<Envelope>> publicKey2Envelope = new ConcurrentHashMap<>();
 
-		CookieConsumer cookieConsumer = new CookieConsumer(cookies);
-		cookieConsumer.start();
+		ConcurrentMap<String, String> cookie2PublicKey = new ConcurrentHashMap<>();
+
+//		CookieConsumer cookieConsumer = new CookieConsumer(cookies);
+//		cookieConsumer.start();
 
 		while(serverSoc != null){
 			try{
 				logger.info("Waiting for connection .....");
 				SSLSocket con = (SSLSocket) serverSoc.accept();
-				TaskHandler task = new TaskHandler(con, cookies, publicKey2Nonce, publicKey2Envelope);
+				TaskHandler task = new TaskHandler(con, cookie2PublicKey, publicKey2Nonce, publicKey2Envelope);
 				logger.info("New Connection has been accepted " + con);
 				task.start();
 			}catch(Exception e){

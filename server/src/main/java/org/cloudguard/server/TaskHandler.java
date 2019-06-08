@@ -27,16 +27,16 @@ public class TaskHandler extends Thread{
 	private DataInputStream in;
 	private DataOutputStream out;
 	private String message;
-	private ConcurrentMap<String, String> cookies;
+	private ConcurrentMap<String, String> cookie2PublicKey;
 	private ConcurrentMap<String, String> publicKey2Nonce;
 	ConcurrentMap<String, List<Envelope>>  publicKey2Envelope;
 
-	public TaskHandler(SSLSocket con, ConcurrentMap<String, String> cookies,
+	public TaskHandler(SSLSocket con, ConcurrentMap<String, String> cookie2PublicKey,
 					   ConcurrentMap<String, String> publicKey2Nonce,
 					   ConcurrentMap<String, List<Envelope>>  publicKey2Envelope) {
 		try{
 			this.connection = con;
-			this.cookies = cookies;
+			this.cookie2PublicKey = cookie2PublicKey;
 			this.publicKey2Nonce = publicKey2Nonce;
 			this.publicKey2Envelope = publicKey2Envelope;
 
@@ -64,6 +64,9 @@ public class TaskHandler extends Thread{
 					break;
 				case "org.cloudguard.commons.SendRequest":
 					handleSendRequest(request);
+					break;
+				case "org.cloudguard.commons.GetRequest":
+					handleGetRequest(request);
 					break;
 			}
 
@@ -116,6 +119,7 @@ public class TaskHandler extends Thread{
 		LoginFinishResponse loginFinishResponse = new LoginFinishResponse(verified, "");
 		if (verified) {
 			loginFinishResponse.setToken(cookie);
+			this.cookie2PublicKey.put(cookie, publicKey);
 		}
 
 		Response response = new Response(loginFinishResponse.getClass().getName(), gson.toJson(loginFinishResponse));
@@ -146,5 +150,26 @@ public class TaskHandler extends Thread{
 		System.out.println(publicKey2Envelope);
 		System.out.println();
 		System.out.println();
+	}
+
+	private void handleGetRequest(Request request) throws
+			IOException {
+		Gson gson = new Gson();
+		GetRequest getRequest = gson.fromJson(request.getJson(), GetRequest.class);
+		String cookie = getRequest.getCookie();
+
+		if (this.cookie2PublicKey.containsKey(cookie)) {
+			String publicKey = this.cookie2PublicKey.get(cookie);
+			List<Envelope> list = new ArrayList<>();
+			if (this.publicKey2Envelope.containsKey(publicKey)) {
+				for (Envelope envelope : this.publicKey2Envelope.get(publicKey)) {
+					list.add(envelope);
+				}
+			}
+
+			GetResponse getResponse = new GetResponse(list);
+			Response response = new Response(getResponse.getClass().getName(), gson.toJson(getResponse));
+			out.writeUTF(gson.toJson(response));
+		}
 	}
 }

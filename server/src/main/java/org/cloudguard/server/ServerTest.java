@@ -71,6 +71,12 @@ public class ServerTest {
         // send a message to myself
         SendResponse sendResponse = sendMessage(pub, pri, "This is a test", PasswordUtil.hash(""));
         System.out.println("sendResponse = " + sendResponse);
+        System.out.println();
+
+        // receive the message snet
+        GetResponse getResponse = getMessage(loginFinishResponse.getToken());
+        System.out.println("getResponse = " + getResponse);
+        System.out.println();
     }
 
     private static String prompt(String message) {
@@ -107,5 +113,16 @@ public class ServerTest {
         SendResponse sendResponse = gson.fromJson(response.getJson(), SendResponse.class);
 
         return sendResponse;
+    }
+
+    private static GetResponse getMessage(String cookie) throws
+            IOException {
+        Gson gson = new Gson();
+        GetRequest getRequest = new GetRequest(cookie);
+        Request request = new Request(getRequest.getClass().getName(), gson.toJson(getRequest));
+        Response response = getResponse(request);
+        GetResponse getResponse = gson.fromJson(response.getJson(), GetResponse.class);
+
+        return getResponse;
     }
 }
