@@ -1,4 +1,4 @@
-package org.cloudguard.ipc;
+package org.cloudguard.commons;
 
 import java.util.Objects;
 

@@ -2,6 +2,8 @@ package org.cloudguard.ipc;
 
 import com.google.gson.Gson;
 
+import org.cloudguard.commons.Envelope;
+import org.cloudguard.commons.Message;
 import org.cloudguard.commons.Response;
 import org.cloudguard.commons.ClientUtil;
 import org.cloudguard.crypto.CryptoUtil;

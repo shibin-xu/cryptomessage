@@ -1,6 +1,7 @@
 package org.cloudguard.ipc;
 
 import com.google.gson.Gson;
+import org.cloudguard.commons.Message;
 import org.cloudguard.crypto.CryptoUtil;
 import org.cloudguard.crypto.PasswordUtil;
 import org.cloudguard.crypto.RSAEncryptUtil;
