@@ -12,6 +12,7 @@ import org.cloudguard.crypto.RSAEncryptUtil;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.swing.*;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.*;
@@ -68,12 +69,21 @@ public class ServerTest {
         System.out.println("loginFinishResponse = " + loginFinishResponse);
         System.out.println();
 
-        // send a message to myself
-        SendResponse sendResponse = sendMessage(pub, pri, "This is a test", PasswordUtil.hash(""), publicKey);
+        // send messages to myself
+        Message message = makeMessage(pub, "Message 0", PasswordUtil.hash(""), publicKey);
+        SendResponse sendResponse = sendMessage(pub, pri, message);
         System.out.println("sendResponse = " + sendResponse);
         System.out.println();
 
-        // receive the message snet
+        for (int i = 1; i < 10; i++) {
+            String hashOfLastMessage = PasswordUtil.hash(gson.toJson(message));
+            message = makeMessage(pub, "Message " + i, hashOfLastMessage, publicKey);
+            sendResponse = sendMessage(pub, pri, message);
+            System.out.println("sendResponse = " + sendResponse);
+            System.out.println();
+        }
+
+        // receive the message sent
         GetResponse getResponse = getMessage(loginFinishResponse.getToken());
         System.out.println("getResponse = " + getResponse);
         System.out.println();
@@ -89,24 +99,31 @@ public class ServerTest {
         return scanIn.nextLine();
     }
 
-    private static SendResponse sendMessage (PublicKey recipientPublicKey, PrivateKey senderPrivateKey,
-                                             String body, String hashOfLastMessage,
-                                             String senderPublicKey) throws
-            NoSuchProviderException,
-            NoSuchAlgorithmException,
-            IOException,
+    private static Message makeMessage(PublicKey recipientPublicKey,
+                                       String body, String hashOfLastMessage,
+                                       String senderPublicKey)
+            throws UnsupportedEncodingException,
             InvalidCipherTextException,
             IllegalBlockSizeException,
             InvalidKeyException,
             BadPaddingException,
-            NoSuchPaddingException, SignatureException {
-        Gson gson = new Gson();
+            NoSuchAlgorithmException,
+            NoSuchPaddingException {
         Date date = new Date();
         byte[] aesKey = AESEncryptUtil.generateKey();
         String encryptedBody = AESEncryptUtil.encrypt(body, aesKey);
         String encryptedAESKey = RSAEncryptUtil.encrypt(Base64.encodeBase64String(aesKey), recipientPublicKey);
+        return new Message(encryptedBody, encryptedAESKey, hashOfLastMessage, date.getTime(), senderPublicKey);
+    }
 
-        Message message = new Message(encryptedBody, encryptedAESKey, hashOfLastMessage, date.getTime(), senderPublicKey);
+    private static SendResponse sendMessage (PublicKey recipientPublicKey,PrivateKey senderPrivateKey,
+                                             Message message) throws
+            NoSuchProviderException,
+            NoSuchAlgorithmException,
+            IOException,
+            InvalidKeyException,
+            SignatureException {
+        Gson gson = new Gson();
         String proof = RSAEncryptUtil.sign(gson.toJson(message), senderPrivateKey);
         Envelope envelope = new Envelope(message, proof, RSAEncryptUtil.getKeyAsString(recipientPublicKey));
         List<Envelope> list = new ArrayList<>();
@@ -172,6 +189,8 @@ public class ServerTest {
 
                     System.out.println(" Message = " + decryptedBody);
                     System.out.println();
+
+                    envelopes.add(envelope);
                 }
             }
         }
