@@ -15,57 +15,41 @@
         <v-window v-model="step">
           <v-window-item :value="1">
             <v-card-text>
-              <v-text-field
-                outline
-                label="Email"
-                append-outer-icon="mail"
-                value="john@place.com"
-                v-model="email"
-              ></v-text-field>
-              <span
-                class="caption grey--text text--darken-1"
-              >This is the email you will use to login to your Vuetify account</span>
-            </v-card-text>
-          </v-window-item>
-
-          <v-window-item :value="2">
-            <v-card-text>
-              <v-text-field
-                :append-icon="showPW ? 'visibility' : 'visibility_off'"
-                :rules="[rules.required, rules.min]"
-                :type="showPW ? 'text' : 'password'"
-                v-model="passw"
-                name="input-10-2"
-                label="Password"
-                hint="At least 8 characters"
-                value="wqfasds"
-                class="input-group--focused"
-                @click:append="showPW = !showPW"
-              ></v-text-field>
-              <span
-                class="caption grey--text text--darken-1"
-              >Please enter a password for your account</span>
-            </v-card-text>
-          </v-window-item>
-          <v-window-item :value="3">
-            <v-card-text>
-              <span class="caption grey--text text--darken-1">Keyfile: {{filename}}</span>
-              <div v-if="needsKey">
-                <v-btn color="generate" v-on:click="save">Generate</v-btn>
-                <label for="file-upload" class="custom-button">Find File</label>
+              <span class="caption grey--text text--darken-1">Public Key: {{publicFilename}}</span>
+              <div v-if="needsPublicKey">
+                <v-btn color="generate" v-on:click="savePublic">Generate</v-btn>
+                <label for="public-file-upload" class="custom-button">Find Public</label>
                 <input
-                  id="file-upload"
+                  id="public-file-upload"
                   type="file"
                   prepend-icon="attach_file"
-                  :accept="accept"
+                  :accept="acceptPublic"
                   :multiple="false"
                   style="background-color: yellow;"
-                  @change="onFileChange"
+                  @change="onPublicFileChange"
                 >
               </div>
             </v-card-text>
           </v-window-item>
-          <v-window-item :value="4">
+          <v-window-item :value="2">
+            <v-card-text>
+              <span class="caption grey--text text--darken-1">Private Key: {{privateFilename}}</span>
+              <div v-if="needsPrivateKey">
+                <v-btn color="generate" v-on:click="savePrivate">Generate</v-btn>
+                <label for="private-file-upload" class="custom-button">Find Private</label>
+                <input
+                  id="private-file-upload"
+                  type="file"
+                  prepend-icon="attach_file"
+                  :accept="acceptPrivate"
+                  :multiple="false"
+                  style="background-color: orange;"
+                  @change="onPrivateFileChange"
+                >
+              </div>
+            </v-card-text>
+          </v-window-item>
+          <v-window-item :value="3">
             <div class="pa-3 text-xs-center">
               <v-img
                 class="mb-3"
@@ -74,7 +58,6 @@
                 src="https://cdn.vuetifyjs.com/images/logos/v.svg"
               ></v-img>
               <h3 class="title font-weight-light mb-2">Welcome to CryptoXT</h3>
-              <span class="caption grey--text">Thanks for signing up!</span>
             </div>
           </v-window-item>
         </v-window>
@@ -99,11 +82,14 @@ export default {
     return {
       email: "",
       passw: "",
-      filename: "",
-      accept: ".pub, .key, .txt",
       showPW: false,
-      needsKey: true,
-      nextkey: "a324b2341b4",
+      publicFilename: "",
+      privateFilename: "",
+      acceptPublic: ".pub, .key, .txt",
+      acceptPrivate: ".ppk, .key, .txt",
+      needsPublicKey: true,
+      needsPrivateKey: true,
+      nextkey: "abc123",
       rules: {
         required: value => !!value || "Required.",
         min: v => v.length >= 8 || "Min 8 characters"
@@ -115,34 +101,53 @@ export default {
     currentTitle() {
       switch (this.step) {
         case 1:
-          return "Sign-up";
-        case 2:
-          return "Create a password";
-        case 3:
           return "Public Key";
+        case 2:
+          return "Private Key";
         default:
           return "Connect";
       }
     }
   },
   methods: {
-    save: function() {
+    savePublic: function() {
       const options = {
-        defaultPath: "./mykey.pub"
+        defaultPath: "./mykey.pub",
       };
-      dialog.showSaveDialog(null, options, this.write);
+      dialog.showSaveDialog(null, options, this.writePublic);
     },
-    write: function(path) {
+    savePrivate: function() {
+      const options = {
+        defaultPath: "./mykey.ppk",
+      };
+      dialog.showSaveDialog(null, options, this.writePrivate);
+    },
+    writePublic: function(path) {
       if (path.length > 0) {
         try {
           let buffer = new Buffer(this.nextkey, "utf8");
           let fd = fs.openSync(path, "w");
           fs.writeSync(fd, buffer, 0, buffer.length);
           fs.close(fd);
-          this.filename = path;
+          this.publicFilename = path;
+          this.needsPublicKey = false;
           this.contents = this.nextkey;
-          this.needsKey = false;
-          this.$emit("keyfile", this.filename, this.contents);
+          
+        } catch (e) {
+          console.log("fail " + e);
+        }
+      }
+    },
+    writePrivate: function(path) {
+      if (path.length > 0) {
+        try {
+          let buffer = new Buffer(this.nextkey, "utf8");
+          let fd = fs.openSync(path, "w");
+          fs.writeSync(fd, buffer, 0, buffer.length);
+          fs.close(fd);
+          this.privateFilename = path;
+          this.needsPrivateKey = false;
+          this.$emit("keyfile", this.publicFilename, this.privateFilename);
         } catch (e) {
           console.log("fail " + e);
         }
@@ -155,33 +160,50 @@ export default {
       });
       return data;
     },
-    onFileChange($event) {
+    onPublicFileChange($event) {
       const files = $event.target.files || $event.dataTransfer.files;
+      console.log("pub file ");
       const form = this.getFormData(files);
       if (files) {
         if (files.length > 0) {
-          this.filename = [...files].map(file => file.name).join(", ");
+          this.publicFilename = [...files].map(file => file.name).join(", ");
         } else {
-          this.filename = null;
+          this.publicFilename = null;
         }
       } else {
-        this.filename = $event.target.value.split("\\").pop();
+        this.publicFilename = $event.target.value.split("\\").pop();
       }
-      this.needsKey = false;
-      this.$emit("keyfile", this.filename, this.contents);
+    },
+    onPrivateFileChange($event) {
+      const files = $event.target.files || $event.dataTransfer.files;
+      
+      console.log("pri file ");
+      const form = this.getFormData(files);
+      if (files) {
+        if (files.length > 0) {
+          this.privateFilename = [...files].map(file => file.name).join(", ");
+        } else {
+          this.privateFilename = null;
+        }
+      } else {
+        this.privateFilename = $event.target.value.split("\\").pop();
+      }
     },
     back: function() {
-      if (this.step == 3 && this.needsKey == false) {
-        this.needsKey = true;
-        this.filename = "";
+      if (this.step == 1 && this.needsPublicKey == false) {
+        this.needsPublicKey = true;
+        this.publicFilename = "";
+      } else if (this.step == 2 && this.needsPrivateKey == false) {
+        this.needsPrivateKey = true;
+        this.privateFilename = "";
       } else {
         this.step--;
       }
     },
     done: function() {
       this.step++;
-      if (this.step == 5) {
-        this.$emit("connect", this.email, this.passw);
+      if (this.step == 4) {
+        this.$emit("keyfile", this.publicFilename, this.privateFilename);
         this.step = 1;
       }
     }

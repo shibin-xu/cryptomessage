@@ -3,24 +3,20 @@ package org.cloudguard.ipc;
 public enum RelayType {
     UIResultForConnect,
     UIResultForDisconnect,
-    UIResultForKeyPath,
-    UIResultForNewAccount,
-    UIResultForExistingLogin,
+    CRYPTOConnectWithKeys,
+    CRYPTODisconnectFromServer,
+
     UIResultForAddContact,
     UIResultForRemoveContact,
     UIResultForRenameContact,
 
-    UIResultForAllContact,
-    UIResultForContactArchive,
+    UIResultForContact,
+    UIResultForArchive,
     
     UIResultForMessageSend,
     UIMessageReceive,
 
-    CRYPTOOpenConnectionToServer,
-    CRYPTODisconnectFromServer,
-    CRYPTOLoginNewAccount,
-    CRYPTOLoginExistingAccount,
-    CRYPTOSetFilePathOfKey,
+
     CRYPTOAddContact,
     CRYPTORemoveContact,
     CRYPTORenameContact,
@@ -31,5 +27,8 @@ public enum RelayType {
     CRYPTOSend,
 
     CRYPTOFakeReceive,
+
+    UIPublicKey,
+    UISecurity,
     
 }

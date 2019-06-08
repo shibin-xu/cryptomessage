@@ -115,21 +115,13 @@ function connectToZmq() {
   util.log("zmq starting")
   zmqClient = zeromq.socket('req')
   zmqClient.connect(`tcp://127.0.0.1:5555`);  
-  ipcMain.on('doLoginAccount', (event, valone, valtwo) => {
-    let blob = makeJson('CRYPTOLoginExistingAccount', valone, valtwo, d.getTime())
-    zmqClient.send(blob)
-  });
-  ipcMain.on('doNewAccount',(event, valone, valtwo) => {
-    let blob = makeJson('CRYPTOLoginNewAccount', valone, valtwo, d.getTime())
-    zmqClient.send(blob)
-  });
   ipcMain.on('doDisconnect', () => {
     let blob = makeJson('CRYPTODisconnectFromServer', "-", "-", d.getTime())
     zmqClient.send(blob)
   });
 
   ipcMain.on('doFilePath', (event, valone, valtwo) => {
-    let blob = makeJson('CRYPTOSetFilePathOfKey', valone, valtwo, d.getTime())
+    let blob = makeJson('CRYPTOConnectWithKeys', valone, valtwo, d.getTime())
     zmqClient.send(blob)
   });
   

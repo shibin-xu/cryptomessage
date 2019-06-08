@@ -40,7 +40,7 @@
       <v-container fluid fill-height class="grey lighten-4">
         <v-layout align-center justify-space-around column>
           <v-flex>
-            <ConnectDialog :shouldRender="showConnect" @keyfile="do_keyfile" @connect="do_connect"/>
+            <ConnectDialog :shouldRender="showConnect" @keyfile="do_keyfile"/>
           </v-flex>
           <v-flex>
             <AddContactDialog :shouldRender="showContact" @add="do_addContact"/>
@@ -177,6 +177,31 @@ export default {
         });
       }
     );
+    this.$electron.ipcRenderer.on(
+      "UIResultForContact",
+      (evt, primary, secondary, timestamp) => {
+        this.rx("", primary, secondary);
+      }
+    );
+    this.$electron.ipcRenderer.on(
+      "UIResultForArchive",
+      (evt, primary, secondary, timestamp) => {
+        this.rx("", primary, secondary);
+      }
+    );
+    this.$electron.ipcRenderer.on(
+      "UIPublicKey",
+      (evt, primary, secondary, timestamp) => {
+        this.rx("", primary, secondary);
+      }
+    );
+    
+    this.$electron.ipcRenderer.on(
+      "UISecurity",
+      (evt, primary, secondary, timestamp) => {
+        this.rx("", primary, secondary);
+      }
+    );
   },
   methods: {
     rx(dataName, primary, secondary) {
@@ -206,17 +231,11 @@ export default {
       this.send("doGet");
       return;
     },
-    do_connect(login, password) {
-      if (login.length > 0) {
-        this.send("doNewAccount", login, password);
+    do_keyfile(pubfile, prifile) {
+      if (pubfile.length > 0) {
+        this.send("doFilePath", pubfile, prifile);
       }
       this.showConnect = false;
-      return;
-    },
-    do_keyfile(filename, pubkey) {
-      if (filename.length > 0) {
-        this.send("doFilePath", filename, pubkey);
-      }
       return;
     },
     do_addContact(alias, pubkey) {
