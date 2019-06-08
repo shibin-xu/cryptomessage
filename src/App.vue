@@ -24,7 +24,7 @@
           </v-list-tile-content>
         </v-list-tile>
         <v-divider dark class="my-3"></v-divider>
-        <Contact @talk="do_talkToContact" @open="contact_action" :contactList="contactList"/>
+        <Contact @talk="do_talkToContact" @open="contact_action" @refresh="contact_refresh" :contactList="contactList"/>
         <v-divider dark class="my-3"></v-divider>
         <v-list-tile @click="settings_action">
           <v-list-tile-action>
@@ -33,6 +33,9 @@
           <v-list-tile-content>
             <v-list-tile-title>{{ settings }}</v-list-tile-title>
           </v-list-tile-content>
+        </v-list-tile>
+        <v-list-tile>
+          {{selfContactID}}
         </v-list-tile>
       </v-list>
     </v-navigation-drawer>
@@ -87,51 +90,20 @@ export default {
     settings: "Settings",
     settings_icon: "settings",
     contacts: "Contacts",
-    chatAlias: "alice",
-    chatContactID: "abda11",
+    chatAlias: "fred",
+    chatContactID: "76864873658734b",
+    selfContactID: "abda11",
     consoleLines: [{ icon: "launch", text: "Start" }],
     contactList: [
       {
-        contactID: "abda11",
-        alias: "alice",
-        icon: "chat_bubble"
-      },
-      {
-        contactID: "abdf23",
-        alias: "bob",
-        icon: "face"
-      },
-      {
-        contactID: "fabf28",
-        alias: "jim",
+        contactID: "76864873658734b",
+        alias: "fred",
         icon: "face"
       }
     ],
     contentLines: [
-      {
-        text: "hi alice",
-        contactID: "abda11",
-        isConfirmed: true,
-        isSent: true
-      },
-      {
-        text: "alice here",
-        contactID: "abda11",
-        isConfirmed: true,
-        isSent: false
-      },
-      {
-        text: "bob here",
-        contactID: "abdf23",
-        isConfirmed: true,
-        isSent: false
-      },
-      {
-        text: "hi bob",
-        contactID: "abdf23",
-        isConfirmed: true,
-        isSent: true
-      }
+      
+      
     ]
   }),
   computed: {
@@ -180,18 +152,31 @@ export default {
     this.$electron.ipcRenderer.on(
       "UIResultForContact",
       (evt, primary, secondary, timestamp) => {
-        this.rx("", primary, secondary);
+        
+        this.contactList.push({
+          contactID: primary,
+          alias: secondary,
+          icon: "face"
+        })
+        this.rx("contact", primary, secondary);
       }
     );
     this.$electron.ipcRenderer.on(
       "UIResultForArchive",
       (evt, primary, secondary, timestamp) => {
         this.rx("", primary, secondary);
+        this.contentLines.push({
+          text: "hi jim, this is alice",
+          contactID: "ab324b324b12b41",
+          isConfirmed: true,
+          isSent: false
+        })
       }
     );
     this.$electron.ipcRenderer.on(
       "UIPublicKey",
       (evt, primary, secondary, timestamp) => {
+        this.selfContactID = primary;
         this.rx("", primary, secondary);
       }
     );
@@ -221,9 +206,14 @@ export default {
       this.showConnect = true;
       return;
     },
+    
     contact_action() {
       console.log("hi");
       this.showContact = true;
+      return;
+    },
+    contact_refresh() {
+      this.send("doGetAllContact");
       return;
     },
     settings_action() {
@@ -249,9 +239,6 @@ export default {
     },
     do_renameContact(words) {
       this.send("doRenameContact", words);
-    },
-    do_getAllContact() {
-      this.send("doGetAllContact");
     },
     do_talkToContact(nextAlias, nextID) {
       this.chatAlias = nextAlias;

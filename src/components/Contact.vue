@@ -6,6 +6,14 @@
       </v-flex>
     </v-layout>
     <ContactFace v-for="face in contactList" @talkface="clickedContact" :key="face.contactID" :face="face"/>
+    <v-list-tile @click="clickedRefresh">
+      <v-list-tile-action>
+        <v-icon>{{ refreshIcon }}</v-icon>
+      </v-list-tile-action>
+      <v-list-tile-content>
+        <v-list-tile-title class="grey--text">{{ refreshText }}</v-list-tile-title>
+      </v-list-tile-content>
+    </v-list-tile>
     <v-list-tile @click="clickedAdd">
       <v-list-tile-action>
         <v-icon>{{ addIcon }}</v-icon>
@@ -30,7 +38,9 @@ export default {
     contacts: "Contact List",
     contacts_icon: "lightbulb_outline",
     addIcon: "add",
-    addText: "Add Contact"
+    addText: "Add Contact",
+    refreshIcon: "adjust",
+    refreshText: "Refresh Contact"
   }),
   methods: {
     clickedContact(alias, id) {
@@ -38,6 +48,9 @@ export default {
     },
     clickedAdd() {
       this.$emit("open");
+    },
+    clickedRefresh() {
+      this.$emit("refresh");
     },
   }
 };
