@@ -8,12 +8,14 @@ public class Message {
     private String encryptedAESKey;     // RSA encrypted AES key
     private String hashOfLastMessage;   // Hash of last message
     private long time;                  // Timestamp of sending
+    private String senderPublicKey;     // RSA public key of sender
 
-    public Message(String body, String encryptedAESKey, String hashOfLastMessage, long time) {
+    public Message(String body, String encryptedAESKey, String hashOfLastMessage, long time, String senderPublicKey) {
         this.body = body;
         this.encryptedAESKey = encryptedAESKey;
         this.hashOfLastMessage = hashOfLastMessage;
         this.time = time;
+        this.senderPublicKey = senderPublicKey;
     }
 
     public String getBody() {
@@ -48,6 +50,14 @@ public class Message {
         this.time = time;
     }
 
+    public String getSenderPublicKey() {
+        return senderPublicKey;
+    }
+
+    public void setSenderPublicKey(String senderPublicKey) {
+        this.senderPublicKey = senderPublicKey;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -56,12 +66,13 @@ public class Message {
         return getTime() == message.getTime() &&
                 getBody().equals(message.getBody()) &&
                 getEncryptedAESKey().equals(message.getEncryptedAESKey()) &&
-                getHashOfLastMessage().equals(message.getHashOfLastMessage());
+                getHashOfLastMessage().equals(message.getHashOfLastMessage()) &&
+                getSenderPublicKey().equals(message.getSenderPublicKey());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getBody(), getEncryptedAESKey(), getHashOfLastMessage(), getTime());
+        return Objects.hash(getBody(), getEncryptedAESKey(), getHashOfLastMessage(), getTime(), getSenderPublicKey());
     }
 
     @Override
@@ -71,6 +82,7 @@ public class Message {
                 ", encryptedAESKey='" + encryptedAESKey + '\'' +
                 ", hashOfLastMessage='" + hashOfLastMessage + '\'' +
                 ", time=" + time +
+                ", senderPublicKey='" + senderPublicKey + '\'' +
                 '}';
     }
 }

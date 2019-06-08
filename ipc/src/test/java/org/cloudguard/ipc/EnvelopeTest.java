@@ -47,7 +47,7 @@ public class EnvelopeTest {
         String body = "This is a test.";
         String hashOfLastMessage = PasswordUtil.hash("");
         Date date = new Date();
-        Message message = new Message(body, "", hashOfLastMessage, date.getTime());
+        Message message = new Message(body, "", hashOfLastMessage, date.getTime(), "");
         String signature = RSAEncryptUtil.sign(gson.toJson(message), privateKey);
         Envelope expected = new Envelope(message, signature, "");
         String serialized = gson.toJson(expected);
@@ -61,7 +61,7 @@ public class EnvelopeTest {
         String body = "This is a test.";
         String hashOfLastMessage = PasswordUtil.hash("");
         Date date = new Date();
-        Message message = new Message(body, "", hashOfLastMessage, date.getTime());
+        Message message = new Message(body, "", hashOfLastMessage, date.getTime(), "");
         String text = gson.toJson(message);
         String proof = RSAEncryptUtil.sign(text, privateKey);
         boolean expected = true;
@@ -75,7 +75,7 @@ public class EnvelopeTest {
         String body = "This is Message " + 0;
         String hashOfLastMessage = PasswordUtil.hash("");
         Date date = new Date();
-        Message message = new Message(body, "", hashOfLastMessage, date.getTime());
+        Message message = new Message(body, "", hashOfLastMessage, date.getTime(), "");
         String text = gson.toJson(message);
         String proof = RSAEncryptUtil.sign(text, privateKey);
         Envelope envelope = new Envelope(message, proof, "");
@@ -87,7 +87,7 @@ public class EnvelopeTest {
             body = "This is Message " + i;
             hashOfLastMessage = PasswordUtil.hash(text);
             date = new Date();
-            message = new Message(body, "", hashOfLastMessage, date.getTime());
+            message = new Message(body, "", hashOfLastMessage, date.getTime(), "");
             text = gson.toJson(message);
             proof = RSAEncryptUtil.sign(text, privateKey);
             envelope = new Envelope(message, proof, "");

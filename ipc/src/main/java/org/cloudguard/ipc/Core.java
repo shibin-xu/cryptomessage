@@ -115,7 +115,7 @@ public class Core {
         
         try {
          
-            Message message = new Message(relay.getPrimaryData(), "", this.hashOfLastMessage, date.getTime());
+            Message message = new Message(relay.getPrimaryData(), "", this.hashOfLastMessage, date.getTime(), "");
             String text = gson.toJson(message);
             String proof = RSAEncryptUtil.sign(text, this.privateKey);
             Envelope envelope = new Envelope(message, proof, "");
@@ -139,7 +139,7 @@ public class Core {
         try
         {
             String body = "This is a test.";
-            Message expected = new Message(body, "", this.hashOfLastMessage, date.getTime());
+            Message expected = new Message(body, "", this.hashOfLastMessage, date.getTime(), "");
             String serialized = gson.toJson(expected);
             Message actual = gson.fromJson(serialized, Message.class);
             String origin = "abdf23";

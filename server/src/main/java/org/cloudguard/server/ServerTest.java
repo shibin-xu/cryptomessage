@@ -16,10 +16,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 import static org.cloudguard.commons.ClientUtil.getResponse;
 import static org.cloudguard.crypto.PasswordUtil.generateCookie;
@@ -40,7 +37,10 @@ public class ServerTest {
             InvalidCipherTextException,
             BadPaddingException,
             NoSuchPaddingException,
-            IllegalBlockSizeException {
+            IllegalBlockSizeException,
+            InvalidKeySpecException {
+        Map<String, List<Envelope>> publicKey2Envelope = new HashMap<>();
+
         System.out.println("ServerTest");
         gson = new Gson();
         CryptoUtil.init();
@@ -69,7 +69,7 @@ public class ServerTest {
         System.out.println();
 
         // send a message to myself
-        SendResponse sendResponse = sendMessage(pub, pri, "This is a test", PasswordUtil.hash(""));
+        SendResponse sendResponse = sendMessage(pub, pri, "This is a test", PasswordUtil.hash(""), publicKey);
         System.out.println("sendResponse = " + sendResponse);
         System.out.println();
 
@@ -77,7 +77,10 @@ public class ServerTest {
         GetResponse getResponse = getMessage(loginFinishResponse.getToken());
         System.out.println("getResponse = " + getResponse);
         System.out.println();
-        readMessage(getResponse.getEnvelopes(), pri);
+        readMessage(getResponse.getEnvelopes(), pri, publicKey2Envelope);
+        System.out.println("publicKey2Envelope = ");
+        System.out.println(publicKey2Envelope);
+        System.out.println();
     }
 
     private static String prompt(String message) {
@@ -87,7 +90,8 @@ public class ServerTest {
     }
 
     private static SendResponse sendMessage (PublicKey recipientPublicKey, PrivateKey senderPrivateKey,
-                                             String body, String hashOfLastMessage ) throws
+                                             String body, String hashOfLastMessage,
+                                             String senderPublicKey) throws
             NoSuchProviderException,
             NoSuchAlgorithmException,
             IOException,
@@ -102,7 +106,7 @@ public class ServerTest {
         String encryptedBody = AESEncryptUtil.encrypt(body, aesKey);
         String encryptedAESKey = RSAEncryptUtil.encrypt(Base64.encodeBase64String(aesKey), recipientPublicKey);
 
-        Message message = new Message(encryptedBody, encryptedAESKey, hashOfLastMessage, date.getTime());
+        Message message = new Message(encryptedBody, encryptedAESKey, hashOfLastMessage, date.getTime(), senderPublicKey);
         String proof = RSAEncryptUtil.sign(gson.toJson(message), senderPrivateKey);
         Envelope envelope = new Envelope(message, proof, RSAEncryptUtil.getKeyAsString(recipientPublicKey));
         List<Envelope> list = new ArrayList<>();
@@ -127,21 +131,49 @@ public class ServerTest {
         return getResponse;
     }
 
-    private static void readMessage(List<Envelope> list, PrivateKey privateKey) throws
+    private static void readMessage(List<Envelope> list, PrivateKey privateKey,
+                                    Map<String, List<Envelope>> publicKey2Envelope) throws
             NoSuchPaddingException,
             NoSuchAlgorithmException,
             IOException,
             BadPaddingException,
             IllegalBlockSizeException,
             InvalidKeyException,
-            InvalidCipherTextException {
+            InvalidCipherTextException,
+            InvalidKeySpecException,
+            NoSuchProviderException,
+            SignatureException {
+        Gson gson = new Gson();
         for (Envelope envelope : list) {
             Message message = envelope.getMessage();
-            String aesKey = RSAEncryptUtil.decrypt(message.getEncryptedAESKey(), privateKey);
-            String decryptedBody = AESEncryptUtil.decrypt(message.getBody(), Base64.decodeBase64(aesKey));
+            System.out.println("message = ");
+            System.out.println(message);
+            System.out.println("public key = " + message.getSenderPublicKey());
+            PublicKey senderPublicKey = RSAEncryptUtil.getPublicKeyFromString(message.getSenderPublicKey());
 
-            System.out.println(" Message = " + decryptedBody);
-            System.out.println();
+            boolean verified = RSAEncryptUtil.verify(gson.toJson(message), envelope.getSignature(), senderPublicKey);
+            if (verified) {
+                List<Envelope> envelopes;
+                if (publicKey2Envelope.containsKey(message.getSenderPublicKey())) {
+                    envelopes = publicKey2Envelope.get(message.getSenderPublicKey());
+                } else {
+                    envelopes = new ArrayList<>();
+                    publicKey2Envelope.put(message.getSenderPublicKey(), envelopes);
+                }
+
+                String expectedHash = PasswordUtil.hash("");
+                if (!envelopes.isEmpty()) {
+                    expectedHash = PasswordUtil.hash(gson.toJson(envelopes.get(envelopes.size() - 1).getMessage()));
+                }
+
+                if (expectedHash.equals(message.getHashOfLastMessage())) {
+                    String aesKey = RSAEncryptUtil.decrypt(message.getEncryptedAESKey(), privateKey);
+                    String decryptedBody = AESEncryptUtil.decrypt(message.getBody(), Base64.decodeBase64(aesKey));
+
+                    System.out.println(" Message = " + decryptedBody);
+                    System.out.println();
+                }
+            }
         }
     }
 }
