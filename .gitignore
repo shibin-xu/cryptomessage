@@ -19,10 +19,7 @@ out/
 # Release
 ./CloudGuard
 CloudGuard.zip
-NET.config
-certs
 SERVER-LOG
-TrustWorthyStore.jts
 DOWNLOAD
 
 # Maven
