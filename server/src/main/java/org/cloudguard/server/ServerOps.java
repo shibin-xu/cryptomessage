@@ -48,7 +48,7 @@ public class ServerOps {
 			try{
 				logger.info("Waiting for connection .....");
 				SSLSocket con = (SSLSocket) serverSoc.accept();
-				TaskHandler task = new TaskHandler(con, sqlpass, cookies, publicKey2Nonce);
+				TaskHandler task = new TaskHandler(con, cookies, publicKey2Nonce);
 				logger.info("New Connection has been accepted " + con);
 				task.start();
 			}catch(Exception e){
