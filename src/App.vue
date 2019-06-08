@@ -180,8 +180,6 @@ export default {
         let speech_blob = primary;
         let archive_key = secondary;
         let speech = JSON.parse(speech_blob)
-        util.log(speech_blob);
-        util.log(speech);
         let wasRcv = speech['senderKey'] == archive_key;
         this.contentLines.push({
           text: speech['content'],
