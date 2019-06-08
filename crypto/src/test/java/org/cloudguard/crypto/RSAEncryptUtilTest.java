@@ -1,8 +1,6 @@
 package org.cloudguard.crypto;
 
 import com.google.gson.Gson;
-import org.cloudguard.commons.DecryptAESResponse;
-import org.cloudguard.commons.Response;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

@@ -58,22 +58,6 @@ public class ClientUtil {
         return askAndReceive(establishConnection(), request);
     }
 
-    public static Response queryuser(String token, List<String> usernames) throws IOException {
-        Gson gson = new Gson();
-        PublicKeyRequest publicKeyRequest = new PublicKeyRequest(token, usernames);
-
-        Request request = new Request(publicKeyRequest.getClass().getName(), gson.toJson(publicKeyRequest));
-        return askAndReceive(establishConnection(), request);
-    }
-
-    public static Response decryptSymmetric(String token, String encryptedAESKey) throws IOException {
-        Gson gson = new Gson();
-        DecryptAESRequest decryptAESRequest = new DecryptAESRequest(token, encryptedAESKey);
-
-        Request request = new Request(decryptAESRequest.getClass().getName(), gson.toJson(decryptAESRequest));
-        return askAndReceive(establishConnection(), request);
-    }
-
     private static Response askAndReceive(SSLSocket con, Request request)
         throws IOException {
         Gson gson = new Gson();
