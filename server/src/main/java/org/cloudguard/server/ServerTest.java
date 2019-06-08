@@ -77,6 +77,7 @@ public class ServerTest {
         GetResponse getResponse = getMessage(loginFinishResponse.getToken());
         System.out.println("getResponse = " + getResponse);
         System.out.println();
+        readMessage(getResponse.getEnvelopes(), pri);
     }
 
     private static String prompt(String message) {
@@ -124,5 +125,23 @@ public class ServerTest {
         GetResponse getResponse = gson.fromJson(response.getJson(), GetResponse.class);
 
         return getResponse;
+    }
+
+    private static void readMessage(List<Envelope> list, PrivateKey privateKey) throws
+            NoSuchPaddingException,
+            NoSuchAlgorithmException,
+            IOException,
+            BadPaddingException,
+            IllegalBlockSizeException,
+            InvalidKeyException,
+            InvalidCipherTextException {
+        for (Envelope envelope : list) {
+            Message message = envelope.getMessage();
+            String aesKey = RSAEncryptUtil.decrypt(message.getEncryptedAESKey(), privateKey);
+            String decryptedBody = AESEncryptUtil.decrypt(message.getBody(), Base64.decodeBase64(aesKey));
+
+            System.out.println(" Message = " + decryptedBody);
+            System.out.println();
+        }
     }
 }
