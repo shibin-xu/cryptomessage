@@ -13,8 +13,8 @@ public enum RelayType {
     UIResultForContact,
     UIResultForArchive,
     
-    UIResultForMessageSend,
-    UIMessageReceive,
+    UIResultForSpeechSend,
+    UISpeechReceive,
 
 
     CRYPTOAddContact,
@@ -26,6 +26,7 @@ public enum RelayType {
 
     CRYPTOSend,
 
+    CRYPTOFakeFill,
     CRYPTOFakeReceive,
 
     UIPublicKey,

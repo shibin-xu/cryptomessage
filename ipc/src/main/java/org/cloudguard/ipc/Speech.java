@@ -13,15 +13,19 @@ public class Speech {
     private boolean signatureVerified;
     private long time;             
 
-    public Speech(int identifier, String senderKey, String recipientKey, String contactAlias, String content, long time) {
+    public Speech(int identifier, String senderKey,  String contactAlias, String content, long time) {
         this.identifier = identifier;
         this.senderKey = senderKey;
-        this.recipientKey = recipientKey;
+        this.recipientKey = "";
         this.contactAlias = contactAlias;
         this.content = content;
         this.previousVerified = false;
         this.signatureVerified = false;
         this.time = time;
+    }
+
+    public void Destination(String recipientKey) {
+        this.recipientKey = recipientKey;
     }
 
     public void Verify(boolean previous, boolean signature) {

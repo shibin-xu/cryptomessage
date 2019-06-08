@@ -151,19 +151,29 @@ function connectToZmq() {
     let blob = makeJson('CRYPTOSend', valone, valtwo, d.getTime())
     zmqClient.send(blob)
   });
-  ipcMain.on('doGet', () => {
-    let blob = makeJson('CRYPTOFakeReceive',"fake","bob", d.getTime())
+  ipcMain.on('doFakeFill', () => {
+    let blob = makeJson('CRYPTOFakeFill',"fill","", d.getTime())
+    zmqClient.send(blob)
+  });
+  ipcMain.on('doFakeGet', (event, pubkey) => {
+    let blob = makeJson('CRYPTOFakeReceive',pubkey,"fake", d.getTime())
     zmqClient.send(blob)
   });
 
 
-  zmqClient.on(`message`, function (raw) {         
-      let json = readJson(raw);
-      let cmd = json[0]
-      let primary = json[1]
-      let secondary = json[2]
-      let timestamp = json[3]
-      mainWindow.webContents.send(cmd, primary, secondary, timestamp);
-      
+  zmqClient.on(`message`, function (a,b,c,d,e) {     
+    
+    for (var i=0; i < arguments.length; i++) {
+      let json = readJson(arguments[i]);
+      if(json)
+      {
+        let cmd = json[0]
+        let primary = json[1]
+        let secondary = json[2]
+        let timestamp = json[3]
+        
+        mainWindow.webContents.send(cmd, primary, secondary, timestamp);
+      }
+    }
   });     
 }

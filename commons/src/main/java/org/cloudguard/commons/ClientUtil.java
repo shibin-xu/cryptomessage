@@ -75,12 +75,12 @@ public class ClientUtil {
             //specifing the trustStore file which contains the certificate & public of the server
             System.setProperty("javax.net.ssl.trustStore", "TrustWorthyStore.jts");
             //specifing the password of the trustStore file
-	    String pass = null;
-	    try{
-	    	Scanner scanIn = new Scanner(new File("certs/tmp.tmp"));
-	        pass = scanIn.nextLine();
-	    }catch(Exception ex){
-	    }
+            String pass = null;
+            try{
+                Scanner scanIn = new Scanner(new File("certs/tmp.tmp"));
+                pass = scanIn.nextLine();
+            }catch(Exception ex){
+            }
             System.setProperty("javax.net.ssl.trustStorePassword", pass);
         }
         initialized = true;  // Initialization was complete.

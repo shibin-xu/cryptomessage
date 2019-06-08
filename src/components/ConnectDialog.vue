@@ -65,7 +65,7 @@
         <v-divider></v-divider>
 
         <v-card-actions>
-          <v-btn :disabled="step === 1" flat @click="back">Back</v-btn>
+          <v-btn flat @click="back">Back</v-btn>
           <v-spacer></v-spacer>
           <v-btn color="primary" depressed @click="done">Next</v-btn>
         </v-card-actions>
@@ -189,6 +189,9 @@ export default {
         this.privateFilename = $event.target.value.split("\\").pop();
       }
     },
+    can_back: function() {
+      return true;
+    },
     back: function() {
       if (this.step == 1 && this.needsPublicKey == false) {
         this.needsPublicKey = true;
@@ -196,9 +199,19 @@ export default {
       } else if (this.step == 2 && this.needsPrivateKey == false) {
         this.needsPrivateKey = true;
         this.privateFilename = "";
+      } else if(this.step == 1) {
+        this.$emit("keyfile", this.publicFilename, this.privateFilename);
       } else {
         this.step--;
       }
+    },
+    can_next: function() {
+      if (this.step == 1 && this.needsPublicKey == true) {
+        return false;
+      } else if (this.step == 2 && this.needsPrivateKey == true) {
+        return false;
+      }
+      return true;
     },
     done: function() {
       this.step++;

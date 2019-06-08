@@ -23,6 +23,9 @@
             <v-list-tile-title>{{ connect }}</v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
+        <v-list-tile>
+          My Key: {{selfContactID}}
+        </v-list-tile>
         <v-divider dark class="my-3"></v-divider>
         <Contact @talk="do_talkToContact" @open="contact_action" @refresh="contact_refresh" :contactList="contactList"/>
         <v-divider dark class="my-3"></v-divider>
@@ -34,8 +37,21 @@
             <v-list-tile-title>{{ settings }}</v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
-        <v-list-tile>
-          {{selfContactID}}
+        <v-list-tile @click="fakeget_action">
+          <v-list-tile-action>
+            <v-icon>{{ widgets }}</v-icon>
+          </v-list-tile-action>
+          <v-list-tile-content>
+            <v-list-tile-title>Fake Get</v-list-tile-title>
+          </v-list-tile-content>
+        </v-list-tile>
+        <v-list-tile @click="fakefill_action">
+          <v-list-tile-action>
+            <v-icon>{{ wallpaper }}</v-icon>
+          </v-list-tile-action>
+          <v-list-tile-content>
+            <v-list-tile-title>Fake Fill</v-list-tile-title>
+          </v-list-tile-content>
         </v-list-tile>
       </v-list>
     </v-navigation-drawer>
@@ -84,22 +100,18 @@ export default {
     drawer: null,
     title: "CryptoXT",
     connect: "Connection",
-    connect_icon: "lightbulb_outline",
-    showConnect: false,
+    connect_icon: "signal_wifi_off",
+    showConnect: true,
     showContact: false,
     settings: "Settings",
     settings_icon: "settings",
     contacts: "Contacts",
-    chatAlias: "fred",
-    chatContactID: "76864873658734b",
+    chatAlias: "-",
+    chatContactID: "0",
     selfContactID: "abda11",
     consoleLines: [{ icon: "launch", text: "Start" }],
     contactList: [
-      {
-        contactID: "76864873658734b",
-        alias: "fred",
-        icon: "face"
-      }
+
     ],
     contentLines: [
       
@@ -132,13 +144,13 @@ export default {
       }
     );
     this.$electron.ipcRenderer.on(
-      "UIResultForMessageSend",
+      "UIResultForSpeechSend",
       (evt, primary, secondary, timestamp) => {
         this.rx("sent", primary, secondary);
       }
     );
     this.$electron.ipcRenderer.on(
-      "UIMessageReceive",
+      "UISpeechReceive",
       (evt, primary, secondary, timestamp) => {
         this.rx("recieved", primary, secondary);
         this.contentLines.push({
@@ -165,11 +177,17 @@ export default {
       "UIResultForArchive",
       (evt, primary, secondary, timestamp) => {
         this.rx("", primary, secondary);
+        let speech_blob = primary;
+        let archive_key = secondary;
+        let speech = JSON.parse(speech_blob)
+        util.log(speech_blob);
+        util.log(speech);
+        let wasRcv = speech['senderKey'] == archive_key;
         this.contentLines.push({
-          text: "hi jim, this is alice",
-          contactID: "ab324b324b12b41",
-          isConfirmed: true,
-          isSent: false
+          text: speech['content'],
+          contactID: archive_key,
+          isConfirmed: speech['signatureVerified'],
+          isSent: !wasRcv
         })
       }
     );
@@ -177,6 +195,7 @@ export default {
       "UIPublicKey",
       (evt, primary, secondary, timestamp) => {
         this.selfContactID = primary;
+        this.connect_icon = "signal_cellular_4_bar";
         this.rx("", primary, secondary);
       }
     );
@@ -218,7 +237,14 @@ export default {
     },
     settings_action() {
 
-      this.send("doGet");
+      
+    },
+    fakeget_action() {
+      this.send("doFakeGet",this.chatContactID);
+      return;
+    },
+    fakefill_action() {
+      this.send("doFakeFill");
       return;
     },
     do_keyfile(pubfile, prifile) {
