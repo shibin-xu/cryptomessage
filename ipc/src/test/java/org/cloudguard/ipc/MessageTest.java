@@ -41,7 +41,7 @@ public class MessageTest {
         String body = "This is a test.";
         String hashOfLastMessage = PasswordUtil.hash("");
         Date date = new Date();
-        Message expected = new Message(body, hashOfLastMessage, date.getTime());
+        Message expected = new Message(body, "", hashOfLastMessage, date.getTime());
         String serialized = gson.toJson(expected);
         Message actual = gson.fromJson(serialized, Message.class);
 

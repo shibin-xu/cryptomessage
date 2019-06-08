@@ -4,14 +4,14 @@ import java.util.Objects;
 
 public class Message {
 
-    private String body;                // Message content
+    private String body;                // AES encrypted Message content
+    private String encryptedAESKey;     // RSA encrypted AES key
     private String hashOfLastMessage;   // Hash of last message
     private long time;                  // Timestamp of sending
 
-    // TODO
-
-    public Message(String body, String hashOfLastMessage, long time) {
+    public Message(String body, String encryptedAESKey, String hashOfLastMessage, long time) {
         this.body = body;
+        this.encryptedAESKey = encryptedAESKey;
         this.hashOfLastMessage = hashOfLastMessage;
         this.time = time;
     }
@@ -20,20 +20,28 @@ public class Message {
         return body;
     }
 
-    public String getHashOfLastMessage() {
-        return hashOfLastMessage;
-    }
-
-    public long getTime() {
-        return time;
-    }
-
     public void setBody(String body) {
         this.body = body;
     }
 
+    public String getEncryptedAESKey() {
+        return encryptedAESKey;
+    }
+
+    public void setEncryptedAESKey(String encryptedAESKey) {
+        this.encryptedAESKey = encryptedAESKey;
+    }
+
+    public String getHashOfLastMessage() {
+        return hashOfLastMessage;
+    }
+
     public void setHashOfLastMessage(String hashOfLastMessage) {
         this.hashOfLastMessage = hashOfLastMessage;
+    }
+
+    public long getTime() {
+        return time;
     }
 
     public void setTime(long time) {
@@ -47,26 +55,22 @@ public class Message {
         Message message = (Message) o;
         return getTime() == message.getTime() &&
                 getBody().equals(message.getBody()) &&
+                getEncryptedAESKey().equals(message.getEncryptedAESKey()) &&
                 getHashOfLastMessage().equals(message.getHashOfLastMessage());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getBody(), getHashOfLastMessage(), getTime());
+        return Objects.hash(getBody(), getEncryptedAESKey(), getHashOfLastMessage(), getTime());
     }
 
     @Override
     public String toString() {
         return "Message{" +
                 "body='" + body + '\'' +
+                ", encryptedAESKey='" + encryptedAESKey + '\'' +
                 ", hashOfLastMessage='" + hashOfLastMessage + '\'' +
                 ", time=" + time +
                 '}';
     }
-
-    // TODO Encrypt then Mac
-    // C         <-- Enc(AES.key, body || hashOfLastMessage)
-    // Signature <-- Sign(RSA.priv, C)
-    //
-    // TODO On disk format
 }
