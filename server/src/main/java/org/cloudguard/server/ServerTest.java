@@ -1,13 +1,24 @@
 package org.cloudguard.server;
 
 import com.google.gson.Gson;
+import org.apache.commons.codec.binary.Base64;
+import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.cloudguard.commons.*;
+import org.cloudguard.crypto.AESEncryptUtil;
 import org.cloudguard.crypto.CryptoUtil;
+import org.cloudguard.crypto.PasswordUtil;
 import org.cloudguard.crypto.RSAEncryptUtil;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Scanner;
 
 import static org.cloudguard.commons.ClientUtil.getResponse;
@@ -25,7 +36,11 @@ public class ServerTest {
             NoSuchAlgorithmException,
             NoSuchProviderException,
             SignatureException,
-            InvalidKeyException, InvalidKeySpecException {
+            InvalidKeyException,
+            InvalidCipherTextException,
+            BadPaddingException,
+            NoSuchPaddingException,
+            IllegalBlockSizeException {
         System.out.println("ServerTest");
         gson = new Gson();
         CryptoUtil.init();
@@ -52,11 +67,45 @@ public class ServerTest {
         LoginFinishResponse loginFinishResponse = gson.fromJson(response.getJson(), LoginFinishResponse.class);
         System.out.println("loginFinishResponse = " + loginFinishResponse);
         System.out.println();
+
+        // send a message to myself
+        SendResponse sendResponse = sendMessage(pub, pri, "This is a test", PasswordUtil.hash(""));
+        System.out.println("sendResponse = " + sendResponse);
     }
 
     private static String prompt(String message) {
         Scanner scanIn = new Scanner(System.in);
         System.out.print(message);
         return scanIn.nextLine();
+    }
+
+    private static SendResponse sendMessage (PublicKey recipientPublicKey, PrivateKey senderPrivateKey,
+                                             String body, String hashOfLastMessage ) throws
+            NoSuchProviderException,
+            NoSuchAlgorithmException,
+            IOException,
+            InvalidCipherTextException,
+            IllegalBlockSizeException,
+            InvalidKeyException,
+            BadPaddingException,
+            NoSuchPaddingException, SignatureException {
+        Gson gson = new Gson();
+        Date date = new Date();
+        byte[] aesKey = AESEncryptUtil.generateKey();
+        String encryptedBody = AESEncryptUtil.encrypt(body, aesKey);
+        String encryptedAESKey = RSAEncryptUtil.encrypt(Base64.encodeBase64String(aesKey), recipientPublicKey);
+
+        Message message = new Message(encryptedBody, encryptedAESKey, hashOfLastMessage, date.getTime());
+        String proof = RSAEncryptUtil.sign(gson.toJson(message), senderPrivateKey);
+        Envelope envelope = new Envelope(message, proof, RSAEncryptUtil.getKeyAsString(recipientPublicKey));
+        List<Envelope> list = new ArrayList<>();
+        list.add(envelope);
+
+        SendRequest sendRequest = new SendRequest(list);
+        Request request = new Request(sendRequest.getClass().getName(), gson.toJson(sendRequest));
+        Response response = getResponse(request);
+        SendResponse sendResponse = gson.fromJson(response.getJson(), SendResponse.class);
+
+        return sendResponse;
     }
 }

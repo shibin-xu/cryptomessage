@@ -12,6 +12,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,12 +29,17 @@ public class TaskHandler extends Thread{
 	private String message;
 	private ConcurrentMap<String, String> cookies;
 	private ConcurrentMap<String, String> publicKey2Nonce;
+	ConcurrentMap<String, List<Envelope>>  publicKey2Envelope;
 
-	public TaskHandler(SSLSocket con, ConcurrentMap<String, String> cookies, ConcurrentMap<String, String> publicKey2Nonce) {
+	public TaskHandler(SSLSocket con, ConcurrentMap<String, String> cookies,
+					   ConcurrentMap<String, String> publicKey2Nonce,
+					   ConcurrentMap<String, List<Envelope>>  publicKey2Envelope) {
 		try{
 			this.connection = con;
 			this.cookies = cookies;
 			this.publicKey2Nonce = publicKey2Nonce;
+			this.publicKey2Envelope = publicKey2Envelope;
+
 			this.in = new DataInputStream(con.getInputStream());
 			this.out = new DataOutputStream(con.getOutputStream());
 		}catch(Exception e){
@@ -55,6 +61,9 @@ public class TaskHandler extends Thread{
 					break;
 				case "org.cloudguard.commons.LoginFinishRequest":
 					handleLoginFinishRequest(request);
+					break;
+				case "org.cloudguard.commons.SendRequest":
+					handleSendRequest(request);
 					break;
 			}
 
@@ -111,5 +120,31 @@ public class TaskHandler extends Thread{
 
 		Response response = new Response(loginFinishResponse.getClass().getName(), gson.toJson(loginFinishResponse));
 		out.writeUTF(gson.toJson(response));
+	}
+
+	private void handleSendRequest(Request request) throws
+			IOException {
+		Gson gson = new Gson();
+		SendRequest sendRequest = gson.fromJson(request.getJson(), SendRequest.class);
+		List<Envelope> list = sendRequest.getEnvelopes();
+
+		for (Envelope envelope : list) {
+			String recipientRSAPublicKey = envelope.getRecipientRSAPublicKey();
+			if (!this.publicKey2Envelope.containsKey(recipientRSAPublicKey))
+				this.publicKey2Envelope.put(recipientRSAPublicKey, new ArrayList<Envelope>());
+			if (!this.publicKey2Envelope.get(recipientRSAPublicKey).contains(envelope))
+				this.publicKey2Envelope.get(recipientRSAPublicKey).add(envelope);
+		}
+
+		SendResponse sendResponse = new SendResponse(true);
+		Response response = new Response(sendResponse.getClass().getName(), gson.toJson(sendResponse));
+		out.writeUTF(gson.toJson(response));
+
+		System.out.println();
+		System.out.println();
+		System.out.println("publicKey2Envelope = ");
+		System.out.println(publicKey2Envelope);
+		System.out.println();
+		System.out.println();
 	}
 }

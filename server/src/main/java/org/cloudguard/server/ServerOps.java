@@ -2,6 +2,7 @@ package org.cloudguard.server;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.cloudguard.commons.Envelope;
 import org.cloudguard.crypto.CryptoUtil;
 
 import javax.net.ssl.SSLServerSocket;
@@ -10,6 +11,7 @@ import javax.net.ssl.SSLSocket;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -40,6 +42,7 @@ public class ServerOps {
 		CryptoUtil.init();
 		ConcurrentMap<String, String> cookies = new ConcurrentHashMap<String, String>();
 		ConcurrentMap<String, String> publicKey2Nonce = new ConcurrentHashMap<>();
+		ConcurrentMap<String, List<Envelope>> publicKey2Envelope = new ConcurrentHashMap<>();
 
 		CookieConsumer cookieConsumer = new CookieConsumer(cookies);
 		cookieConsumer.start();
@@ -48,7 +51,7 @@ public class ServerOps {
 			try{
 				logger.info("Waiting for connection .....");
 				SSLSocket con = (SSLSocket) serverSoc.accept();
-				TaskHandler task = new TaskHandler(con, cookies, publicKey2Nonce);
+				TaskHandler task = new TaskHandler(con, cookies, publicKey2Nonce, publicKey2Envelope);
 				logger.info("New Connection has been accepted " + con);
 				task.start();
 			}catch(Exception e){
