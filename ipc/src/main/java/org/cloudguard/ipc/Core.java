@@ -118,7 +118,7 @@ public class Core {
             Message message = new Message(relay.getPrimaryData(), "", this.hashOfLastMessage, date.getTime());
             String text = gson.toJson(message);
             String proof = RSAEncryptUtil.sign(text, this.privateKey);
-            Envelope envelope = new Envelope(message, proof);
+            Envelope envelope = new Envelope(message, proof, "");
             
             this.hashOfLastMessage = PasswordUtil.hash(text);
 

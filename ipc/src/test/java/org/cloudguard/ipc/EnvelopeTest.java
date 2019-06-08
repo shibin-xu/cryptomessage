@@ -49,7 +49,7 @@ public class EnvelopeTest {
         Date date = new Date();
         Message message = new Message(body, "", hashOfLastMessage, date.getTime());
         String signature = RSAEncryptUtil.sign(gson.toJson(message), privateKey);
-        Envelope expected = new Envelope(message, signature);
+        Envelope expected = new Envelope(message, signature, "");
         String serialized = gson.toJson(expected);
         Envelope actual = gson.fromJson(serialized, Envelope.class);
 
@@ -78,7 +78,7 @@ public class EnvelopeTest {
         Message message = new Message(body, "", hashOfLastMessage, date.getTime());
         String text = gson.toJson(message);
         String proof = RSAEncryptUtil.sign(text, privateKey);
-        Envelope envelope = new Envelope(message, proof);
+        Envelope envelope = new Envelope(message, proof, "");
         List<Envelope> list = new ArrayList<>();
         list.add(envelope);
 
@@ -90,7 +90,7 @@ public class EnvelopeTest {
             message = new Message(body, "", hashOfLastMessage, date.getTime());
             text = gson.toJson(message);
             proof = RSAEncryptUtil.sign(text, privateKey);
-            envelope = new Envelope(message, proof);
+            envelope = new Envelope(message, proof, "");
             list.add(envelope);
         }
 
