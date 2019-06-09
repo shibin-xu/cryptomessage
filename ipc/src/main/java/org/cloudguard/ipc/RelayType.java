@@ -19,7 +19,8 @@ public enum RelayType {
     UISpeechNextIdentifier,
 
 
-    CRYPTOAddContact,
+    CRYPTOAddContactString,
+    CRYPTOAddContactFile,
     CRYPTORemoveContact,
     CRYPTORenameContact,
     

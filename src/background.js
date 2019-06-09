@@ -125,8 +125,12 @@ function connectToZmq() {
     zmqClient.send(blob)
   });
   
-  ipcMain.on('doAddContact', (event, valone, valtwo) => {
-    let blob = makeJson('CRYPTOAddContact', valone, valtwo, d.getTime())
+  ipcMain.on('doAddContactString', (event, valone, valtwo) => {
+    let blob = makeJson('CRYPTOAddContactString', valone, valtwo, d.getTime())
+    zmqClient.send(blob)
+  });
+  ipcMain.on('doAddContactFile', (event, valone, valtwo) => {
+    let blob = makeJson('CRYPTOAddContactFile', valone, valtwo, d.getTime())
     zmqClient.send(blob)
   });
   ipcMain.on('doRemoveContact', (event, valone, valtwo) => {

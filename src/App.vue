@@ -66,7 +66,11 @@
             <ConnectDialog :shouldRender="showConnect" @keyfile="do_keyfile"/>
           </v-flex>
           <v-flex>
-            <AddContactDialog :shouldRender="showContact" @add="do_addContact"/>
+            <AddContactDialog
+              :shouldRender="showContact"
+              @add_by_string="do_addContactString"
+              @add_by_file="do_addContactFile"
+            />
           </v-flex>
           <v-flex grow>
             <ChatArea
@@ -217,16 +221,23 @@ export default {
   },
   methods: {
     doTick() {
+      this.tick_text = "Disable Tick";
+      this.tick_icon = "sync";
       this.ticking = setInterval(() => {
         if (this.isConnected) {
-          this.send("doTick");
-          this.tick_text = "Disable Tick";
+          this.send("doTick", this.chatContactID);
         }
       }, 3000);
     },
     toggle_tick() {
-      this.doTick();
-      this.tick_icon = "sync";
+      if (this.ticking == null) {
+        this.doTick();
+      } else {
+        clearInterval(this.ticking);
+        this.tick_text = "Enable Tick";
+        this.tick_icon = "sync_disabled";
+        this.ticking = null;
+      }
     },
     rx(dataName, primary, secondary) {
       this.consoleLines.push({
@@ -288,10 +299,16 @@ export default {
       this.showConnect = false;
       return;
     },
-    do_addContact(pubkey, alias) {
+    do_addContactString(pubkey, alias) {
       this.showContact = false;
-      if (alias.length > 0) {
-        this.send("doAddContact", pubkey, alias);
+      if (pubkey.length > 0) {
+        this.send("doAddContactString", pubkey, alias);
+      }
+    },
+    do_addContactFile(pubfile, alias) {
+      this.showContact = false;
+      if (pubfile.length > 0) {
+        this.send("doAddContactFile", pubfile, alias);
       }
     },
     do_removeContact(pubkey, alias) {

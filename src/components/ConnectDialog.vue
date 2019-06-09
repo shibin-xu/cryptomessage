@@ -172,7 +172,7 @@ export default {
     },
     onPublicFileChange($event) {
       const files = $event.target.files || $event.dataTransfer.files;
-      console.log("pub file ");
+      
       const form = this.getFormData(files);
       if (files) {
         if (files.length > 0) {
@@ -186,11 +186,11 @@ export default {
         this.publicFilename = $event.target.value.split("\\").pop();
         this.needsPublicKey = false;
       }
+      console.log("pub file "+this.publicFilename);
     },
     onPrivateFileChange($event) {
       const files = $event.target.files || $event.dataTransfer.files;
       
-      console.log("pri file ");
       const form = this.getFormData(files);
       if (files) {
         if (files.length > 0) {
@@ -204,6 +204,7 @@ export default {
         this.privateFilename = $event.target.value.split("\\").pop();
         this.needsPrivateKey = false;
       }
+      console.log("ppk file "+this.privateFilename);
     },
     
     back: function() {

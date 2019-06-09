@@ -85,7 +85,7 @@ public class Core {
 
             SendRelay(zsocket, RelayType.UIResultForConnect, "True", "True", date);
             
-            GetAllContact();
+            AddContactString(publicKeyString, "self");
         } catch (Exception e) {
             System.out.println("failed to login finish = " + e);
             SendRelay(zsocket, RelayType.UIResultForConnect, "True", "False", date);
@@ -98,7 +98,7 @@ public class Core {
 
     }
 
-    private void Tick() {
+    private void Tick(String contactKey) {
 
         GetResponse getResponse = null;
         try {
@@ -115,12 +115,12 @@ public class Core {
 
         try {
             if (getResponse != null) {
-                //FIXME
                 System.out.println("getResponse = " + getResponse);
                 System.out.println();
-                //CoreMessageUtil.readMessage(getResponse.getEnvelopes(), privateKey, envelopeMap);
                 CoreMessageUtil.readMessage(getResponse.getEnvelopes(), privateKey, envelopeMap, speechMap);
-                //COPY TO speechMap
+                System.out.println("update archive");
+                System.out.println();
+                GetContactArchive(contactKey);
             }
         } catch (Exception e) {
 
@@ -130,32 +130,59 @@ public class Core {
     }
 
 
-    private void AddContact(String publicKeyString, String alias) {
-        String result = contacts.put(publicKeyString, alias);
-        if (result != null) {
-            SendRelay(zsocket, RelayType.UIResultForRenameContact, "True", alias, date);
-        } else {
-            SendRelay(zsocket, RelayType.UIResultForAddContact, "True", alias, date);
+    private void AddContactString(String publicKeyString, String alias) {
+        try {
+            String result = contacts.put(publicKeyString, alias);
+            if (result != null) {
+                SendRelay(zsocket, RelayType.UIResultForRenameContact, "True", alias, date);
+            } else {
+                SendRelay(zsocket, RelayType.UIResultForAddContact, "True", alias, date);
+            }
+        } catch (Exception e) {
+            System.out.println("add contact exception = " + e);
+        }
+        GetAllContact();
+    }
+    private void AddContactFile(String publicKeyFile, String alias) {
+        try {
+            PublicKey contactKey = CoreKeyUtil.GetPublicKey(publicKeyFile);
+            String contactKeyString = getKeyAsString(contactKey);
+            String result = contacts.put(contactKeyString, alias);
+            if (result != null) {
+                SendRelay(zsocket, RelayType.UIResultForRenameContact, "True", alias, date);
+            } else {
+                SendRelay(zsocket, RelayType.UIResultForAddContact, "True", alias, date);
+            }
+        } catch (Exception e) {
+            System.out.println("add contact exception = " + e);
         }
         GetAllContact();
     }
 
-    private void RemoveContact(String publicKeyString, String alias) {
-
-        boolean removed = contacts.remove(publicKeyString, alias);
-        if (removed) {
-            SendRelay(zsocket, RelayType.UIResultForRemoveContact, "True", alias, date);
-        } else {
-            SendRelay(zsocket, RelayType.UIResultForRemoveContact, "False", alias, date);
+    private void RemoveContact(String contactKeyString, String alias) {
+        try {
+            boolean removed = contacts.remove(contactKeyString, alias);
+            if (removed) {
+                SendRelay(zsocket, RelayType.UIResultForRemoveContact, "True", alias, date);
+            } else {
+                SendRelay(zsocket, RelayType.UIResultForRemoveContact, "False", alias, date);
+            }
+        } catch (Exception e) {
+            System.out.println("add contact exception = " + e);
         }
     }
 
-    private void RenameContact(String publicKeyString, String alias) {
-        String result = contacts.put(publicKeyString, alias);
-        if (result != null) {
-            SendRelay(zsocket, RelayType.UIResultForRenameContact, "True", alias, date);
-        } else {
-            SendRelay(zsocket, RelayType.UIResultForAddContact, "True", alias, date);
+    private void RenameContact(String contactKeyString, String alias) {
+        try {
+            String result = contacts.put(contactKeyString, alias);
+            if (result != null) {
+                SendRelay(zsocket, RelayType.UIResultForRenameContact, "True", alias, date);
+            } else {
+                SendRelay(zsocket, RelayType.UIResultForAddContact, "True", alias, date);
+            }
+            
+        } catch (Exception e) {
+            System.out.println("add contact exception = " + e);
         }
     }
 
@@ -200,16 +227,21 @@ public class Core {
     }
 
     private void SendSpeech(String sendText, String destinationKeyString) {
-
-        String publicKeyString = getKeyAsString(publicKey);
+        
         String destinationAlias = "unknown";
-        if (!contacts.containsKey(destinationKeyString)) {
-            contacts.put(destinationKeyString, destinationAlias);
+        String publicKeyString = getKeyAsString(publicKey);
+        try {
+            
+            if (!contacts.containsKey(destinationKeyString)) {
+                contacts.put(destinationKeyString, destinationAlias);
+            }
+            destinationAlias = this.contacts.get(destinationKeyString);
+        } catch (Exception e) {
+            System.out.println("contact = " + e);
         }
-        destinationAlias = this.contacts.get(destinationKeyString);
 
         try {
-            PublicKey recipient = CoreKeyUtil.GetPublicKeyFromText(destinationKeyString);
+            PublicKey recipient = CoreKeyUtil.GetPublicKeyFromText(destinationKeyString); 
             if (!lastHashes.containsKey(destinationKeyString)) {
                 lastHashes.put(destinationKeyString, PasswordUtil.hash(""));
             }
@@ -246,7 +278,7 @@ public class Core {
             GetContactArchive(destinationKeyString);
 
         } catch (Exception e) {
-            System.out.println("Failed SendSpeech = " + e);
+            System.out.println("Failed Speech = " + e);
         }
     }
 
@@ -289,7 +321,7 @@ public class Core {
                 default:
                     break;
                 case CRYPTOTick:
-                    Tick();
+                    Tick(inputRelay.getPrimaryData());
                     break;
                 case CRYPTOConnectWithKeys:
                     ConnectWithKeys(inputRelay.getPrimaryData(), inputRelay.getSecondaryData());
@@ -297,8 +329,11 @@ public class Core {
                 case CRYPTODisconnectFromServer:
                     DisconnectFromServer();
                     break;
-                case CRYPTOAddContact:
-                    AddContact(inputRelay.getPrimaryData(), inputRelay.getSecondaryData());
+                case CRYPTOAddContactString:
+                    AddContactString(inputRelay.getPrimaryData(), inputRelay.getSecondaryData());
+                    break;
+                case CRYPTOAddContactFile:
+                    AddContactFile(inputRelay.getPrimaryData(), inputRelay.getSecondaryData());
                     break;
                 case CRYPTORemoveContact:
                     RemoveContact(inputRelay.getPrimaryData(), inputRelay.getSecondaryData());
@@ -341,23 +376,32 @@ public class Core {
                 }
             }
         } catch (Exception e) {
-
             System.out.println("zsocket exception = " + e);
         }
     }
     private Relay ReadRelay(byte[] raw) {
 
-        String rawString = new String(raw, ZMQ.CHARSET);
-        Relay r = gson.fromJson(rawString, Relay.class);
+        Relay r = null;
+        try{
+            String rawString = new String(raw, ZMQ.CHARSET);
+            r = gson.fromJson(rawString, Relay.class);
+        } catch (Exception e) {
+                
+            System.out.println("ReadRelay exception = " + e);
+        }
         return r;
     }
 
     private void SendRelay(ZMQ.Socket zsocket, RelayType type, String payload, String sender, Date date) {
 
-        Relay relay = new Relay(type, payload, sender, 2);
-        String serialized = gson.toJson(relay);
-        System.out.println("ToUI: " + relay.getType());
-        zbuffer.add(serialized);
+        try {
+            Relay relay = new Relay(type, payload, sender, 2);
+            String serialized = gson.toJson(relay);
+            System.out.println("ToUI: " + relay.getType());
+            zbuffer.add(serialized);
+        } catch (Exception e) { 
+            System.out.println("SendRelay exception = " + e);
+        }
     }
 
 }
