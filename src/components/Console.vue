@@ -1,6 +1,6 @@
 <template>
   <div ref="conDiv"
-   style=" background: white; overflow: auto; position: absolute; z-index:10; height: 10%; width:94%; left:3%; bottom:3%; max-height: 10%"
+   style=" background: gray; overflow: auto; height:12vh; width: 65vw"
     >
 
     <v-container  ref="conDiv">

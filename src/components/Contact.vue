@@ -1,28 +1,34 @@
 <template>
-  <v-list>
-    <v-layout row align-center>
-      <v-flex xs6>
-        <v-subheader>{{contacts}}</v-subheader>
-      </v-flex>
-    </v-layout>
-    <ContactFace v-for="face in contactList" @talkface="clickedContact" :key="face.contactID" :face="face"/>
-    <v-list-tile @click="clickedRefresh">
-      <v-list-tile-action>
-        <v-icon>{{ refreshIcon }}</v-icon>
-      </v-list-tile-action>
-      <v-list-tile-content>
-        <v-list-tile-title class="grey--text">{{ refreshText }}</v-list-tile-title>
-      </v-list-tile-content>
-    </v-list-tile>
-    <v-list-tile @click="clickedAdd">
-      <v-list-tile-action>
-        <v-icon>{{ addIcon }}</v-icon>
-      </v-list-tile-action>
-      <v-list-tile-content>
-        <v-list-tile-title class="grey--text">{{ addText }}</v-list-tile-title>
-      </v-list-tile-content>
-    </v-list-tile>
-  </v-list>
+    <v-list>
+      <v-layout row align-center>
+        <v-flex xs6>
+          <v-subheader>{{contacts}}</v-subheader>
+        </v-flex>
+      </v-layout>
+      <div ref="contacDiv" style=" background: #0F4D8E; overflow: auto; height:25vh; width: 65vw">
+      <ContactFace
+        v-for="obj in contactObjects"
+        @talkface="clickedContact"
+        :obj="obj"
+      />
+      </div>
+      <v-list-tile @click="clickedRefresh">
+        <v-list-tile-action>
+          <v-icon>{{ refreshIcon }}</v-icon>
+        </v-list-tile-action>
+        <v-list-tile-content>
+          <v-list-tile-title class="grey--text">{{ refreshText }}</v-list-tile-title>
+        </v-list-tile-content>
+      </v-list-tile>
+      <v-list-tile @click="clickedAdd">
+        <v-list-tile-action>
+          <v-icon>{{ addIcon }}</v-icon>
+        </v-list-tile-action>
+        <v-list-tile-content>
+          <v-list-tile-title class="grey--text">{{ addText }}</v-list-tile-title>
+        </v-list-tile-content>
+      </v-list-tile>
+    </v-list>
 </template>
 
 <script>
@@ -32,7 +38,7 @@ export default {
     ContactFace
   },
   props: {
-    contactList: Array
+    contactObjects: Array
   },
   data: () => ({
     contacts: "Contact List",
@@ -51,7 +57,7 @@ export default {
     },
     clickedRefresh() {
       this.$emit("refresh");
-    },
+    }
   }
 };
 </script>

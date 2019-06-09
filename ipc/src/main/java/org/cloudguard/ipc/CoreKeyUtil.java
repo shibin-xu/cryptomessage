@@ -16,7 +16,6 @@ public class CoreKeyUtil {
         NoSuchAlgorithmException,
         InvalidKeySpecException
     {
-
         byte[] keyBytes = Files.readAllBytes(Paths.get(fileName));
         if(keyBytes.length < 80)
         {
@@ -32,7 +31,6 @@ public class CoreKeyUtil {
         NoSuchAlgorithmException,
         InvalidKeySpecException
     {
-
         byte[] keyBytes = Files.readAllBytes(Paths.get(fileName));
         if(keyBytes.length < 80)
         {

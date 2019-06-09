@@ -27,9 +27,6 @@
                 value=""
                 v-model="pubkey"
               ></v-text-field>
-              <span
-                class="caption grey--text text--darken-1"
-              >This is the </span>
             </v-card-text>
           </v-window-item>
           <v-window-item :value="2">
@@ -38,9 +35,9 @@
                 class="mb-3"
                 contain
                 height="128"
-                src="https://cdn.vuetifyjs.com/images/logos/v.svg"
+                src="assets\xtmsg.svg"
               ></v-img>
-              <span class="caption grey--text">Thanks for adding</span>
+              <span class="caption grey--text">Thanks for adding {{alias }}</span>
             </div>
           </v-window-item>
         </v-window>
@@ -70,12 +67,7 @@ export default {
   },
   computed: {
     currentTitle() {
-      switch (this.step) {
-        case 1:
-          return "Enter";
-        default:
-          return "Added";
-      }
+      return "Add Contact";
     }
   },
   methods: {
@@ -85,7 +77,7 @@ export default {
     done: function() {
       this.step++;
       if (this.step == 3) {
-        this.$emit("add", this.alias, this.pubkey);
+        this.$emit("add", this.pubkey, this.alias);
         this.step = 1;
       }
     }

@@ -55,7 +55,7 @@
                 class="mb-3"
                 contain
                 height="128"
-                src="https://cdn.vuetifyjs.com/images/logos/v.svg"
+                src="assets\xtmsg.svg"
               ></v-img>
               <h3 class="title font-weight-light mb-2">Welcome to CryptoXT</h3>
             </div>
@@ -65,9 +65,9 @@
         <v-divider></v-divider>
 
         <v-card-actions>
-          <v-btn flat @click="back">Back</v-btn>
+          <v-btn :disabled=block_back flat @click="back">Back</v-btn>
           <v-spacer></v-spacer>
-          <v-btn color="primary" depressed @click="done">Next</v-btn>
+          <v-btn :disabled=block_next color="primary" depressed @click="done">Next</v-btn>
         </v-card-actions>
       </v-card>
     </div>
@@ -101,13 +101,24 @@ export default {
     currentTitle() {
       switch (this.step) {
         case 1:
-          return "Public Key";
+          return "Find Local Key";
         case 2:
-          return "Private Key";
+          return "Find Local Key";
         default:
           return "Connect";
       }
-    }
+    },
+    block_back: function() {
+      return false;
+    },
+    block_next: function() {
+      if (this.step == 1 && this.needsPublicKey == true) {
+        return true;
+      } else if (this.step == 2 && this.needsPrivateKey == true) {
+        return true;
+      }
+      return false;
+    },
   },
   methods: {
     savePublic: function() {
@@ -123,7 +134,7 @@ export default {
       dialog.showSaveDialog(null, options, this.writePrivate);
     },
     writePublic: function(path) {
-      if (path.length > 0) {
+      if (path && path.length > 0) {
         try {
           let buffer = new Buffer(this.nextkey, "utf8");
           let fd = fs.openSync(path, "w");
@@ -131,7 +142,6 @@ export default {
           fs.close(fd);
           this.publicFilename = path;
           this.needsPublicKey = false;
-          this.contents = this.nextkey;
           
         } catch (e) {
           console.log("fail " + e);
@@ -139,7 +149,7 @@ export default {
       }
     },
     writePrivate: function(path) {
-      if (path.length > 0) {
+      if (path && path.length > 0) {
         try {
           let buffer = new Buffer(this.nextkey, "utf8");
           let fd = fs.openSync(path, "w");
@@ -167,11 +177,14 @@ export default {
       if (files) {
         if (files.length > 0) {
           this.publicFilename = [...files].map(file => file.name).join(", ");
+          this.needsPublicKey = false;
         } else {
           this.publicFilename = null;
+          this.needsPublicKey = true;
         }
       } else {
         this.publicFilename = $event.target.value.split("\\").pop();
+        this.needsPublicKey = false;
       }
     },
     onPrivateFileChange($event) {
@@ -182,16 +195,17 @@ export default {
       if (files) {
         if (files.length > 0) {
           this.privateFilename = [...files].map(file => file.name).join(", ");
+          this.needsPrivateKey = false;
         } else {
           this.privateFilename = null;
+          this.needsPrivateKey = true;
         }
       } else {
         this.privateFilename = $event.target.value.split("\\").pop();
+        this.needsPrivateKey = false;
       }
     },
-    can_back: function() {
-      return true;
-    },
+    
     back: function() {
       if (this.step == 1 && this.needsPublicKey == false) {
         this.needsPublicKey = true;
@@ -204,14 +218,6 @@ export default {
       } else {
         this.step--;
       }
-    },
-    can_next: function() {
-      if (this.step == 1 && this.needsPublicKey == true) {
-        return false;
-      } else if (this.step == 2 && this.needsPrivateKey == true) {
-        return false;
-      }
-      return true;
     },
     done: function() {
       this.step++;

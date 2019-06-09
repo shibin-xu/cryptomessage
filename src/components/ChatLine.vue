@@ -1,15 +1,15 @@
 <template>
     <v-card height="100px" id="chatline">
-        <v-icon>{{ line.icon }}</v-icon>
-        {{ line.text }}
+        <v-icon>{{ speech.icon }}</v-icon>
+        {{ speech.text }}
     </v-card>
 </template>
 
 <script>
 export default {
   props: {
-    line: {
-      icon: Object,
+    speech: {
+      icon: String,
       text: true,
       contactID: true,
       isConfirmed: true,

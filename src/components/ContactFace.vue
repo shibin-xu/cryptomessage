@@ -1,11 +1,11 @@
 <template>
   <v-list-tile @click="clickedTalk">
     <v-list-tile-action>
-      <v-icon >{{ face.icon }}</v-icon>
+      <v-icon >{{ obj.icon }}</v-icon>
     </v-list-tile-action>
     <v-list-tile-content>
-      <v-list-tile-title>{{ face.alias }}</v-list-tile-title>
-      {{face.contactID}}
+      <v-list-tile-title>{{ obj.alias }}</v-list-tile-title>
+      {{obj.contactID}}
     </v-list-tile-content>
   </v-list-tile>
 </template>
@@ -13,7 +13,7 @@
 <script>
 export default {
   props: {
-    face: {
+    obj: {
       contactID: "abda11",
       alias: "Alice",
       icon: "widgets",
@@ -21,7 +21,7 @@ export default {
   },
   methods: {
     clickedTalk() {
-      this.$emit("talkface", this.face.alias, this.face.contactID);
+      this.$emit("talkface", this.obj.alias, this.obj.contactID);
     },
     delcontact() {
       

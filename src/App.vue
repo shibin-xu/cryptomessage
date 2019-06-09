@@ -10,25 +10,23 @@
     >
       <v-list>
         <v-layout row align-center>
-          <v-flex xs6>
-            <v-subheader>{{title}}</v-subheader>
+          <v-flex xs8>
+            <v-img
+                class="mb-3"
+                contain
+                height="128"
+                src="assets\xtmsg.svg"
+              ></v-img>
+          </v-flex>
+          <v-flex xs4>
+            <v-icon @click="connect_action">{{ connect_icon }}</v-icon>
+            {{ connect }}
           </v-flex>
         </v-layout>
-        <v-divider dark class="my-3"></v-divider>
-        <v-list-tile @click="connect_action">
-          <v-list-tile-action>
-            <v-icon>{{ connect_icon }}</v-icon>
-          </v-list-tile-action>
-          <v-list-tile-content>
-            <v-list-tile-title>{{ connect }}</v-list-tile-title>
-          </v-list-tile-content>
+        <v-list-tile @click="connect_action" style="height:200px, overflow:auto">
+          My Public Key: {{selfContactID}}
         </v-list-tile>
-        <v-list-tile>
-          My Key: {{selfContactID}}
-        </v-list-tile>
-        <v-divider dark class="my-3"></v-divider>
-        <Contact @talk="do_talkToContact" @open="contact_action" @refresh="contact_refresh" :contactList="contactList"/>
-        <v-divider dark class="my-3"></v-divider>
+        <Contact @talk="do_talkToContact" @open="contact_action" @refresh="contact_refresh" :contactObjects="contactObjects"/>
         <v-list-tile @click="settings_action">
           <v-list-tile-action>
             <v-icon>{{ settings_icon }}</v-icon>
@@ -57,7 +55,7 @@
     </v-navigation-drawer>
     <v-content style="min-height:97vh; max-height:97vh">
       <v-container fluid fill-height class="grey lighten-4">
-        <v-layout align-center justify-space-around column>
+        <v-layout align-center justify-top column>
           <v-flex>
             <ConnectDialog :shouldRender="showConnect" @keyfile="do_keyfile"/>
           </v-flex>
@@ -69,7 +67,7 @@
               @transmit="do_send"
               :contactName="chatAlias"
               :contactID="chatContactID"
-              :chatLines="chatLines"
+              :speechObjects="speechObjects"
             />
           </v-flex>
           <v-spacer></v-spacer>
@@ -99,7 +97,7 @@ export default {
   data: () => ({
     drawer: null,
     title: "CryptoXT",
-    connect: "Connection",
+    connect: "No connection",
     connect_icon: "signal_wifi_off",
     showConnect: true,
     showContact: false,
@@ -108,28 +106,13 @@ export default {
     contacts: "Contacts",
     chatAlias: "-",
     chatContactID: "0",
-    selfContactID: "abda11",
+    selfContactID: "--",
     consoleLines: [{ icon: "launch", text: "Start" }],
-    contactList: [
-
-    ],
-    contentLines: [
-      
-      
-    ]
+    contactCollection: new Map(),
+    speechCollection: new Map(),
+    contactObjects: [],
+    speechObjects: [],
   }),
-  computed: {
-    chatLines: function() {
-      let good = [];
-      for (var i in this.contentLines) {
-        let content = this.contentLines[i];
-        if (content.contactID == this.chatContactID) {
-          good.push(content);
-        }
-      }
-      return good;
-    }
-  },
   mounted() {
     this.$electron.ipcRenderer.on(
       "UIResultForConnect",
@@ -153,23 +136,37 @@ export default {
       "UISpeechReceive",
       (evt, primary, secondary, timestamp) => {
         this.rx("recieved", primary, secondary);
-        this.contentLines.push({
-          text: primary,
-          contactID: secondary,
-          isConfirmed: true,
-          isSent: false
-        });
+        let speech_blob = primary;
+        let archive_key = secondary;
+        try {
+          let speech = JSON.parse(speech_blob);
+          let wasRcv = speech['senderKey'] == archive_key;
+          let totalKey = speech['identifier']+","+speech['senderKey'];
+          this.speechCollection.set(totalKey,{
+            icon: "sentiment_neutral",
+            text: speech['content'],
+            contactID: archive_key,
+            isConfirmed: speech['signatureVerified'],
+            isSent: !wasRcv
+          });
+          this.make_good_speech();
+        } catch(err) {
+          return;
+        }
       }
     );
     this.$electron.ipcRenderer.on(
       "UIResultForContact",
       (evt, primary, secondary, timestamp) => {
         
-        this.contactList.push({
+        this.contactCollection.set(primary, {
           contactID: primary,
           alias: secondary,
           icon: "face"
-        })
+        });
+        let x = this.contactCollection.get(primary);
+        console.log("add"+x);
+        this.make_good_contacts();
         this.rx("contact", primary, secondary);
       }
     );
@@ -179,14 +176,22 @@ export default {
         this.rx("", primary, secondary);
         let speech_blob = primary;
         let archive_key = secondary;
-        let speech = JSON.parse(speech_blob)
-        let wasRcv = speech['senderKey'] == archive_key;
-        this.contentLines.push({
-          text: speech['content'],
-          contactID: archive_key,
-          isConfirmed: speech['signatureVerified'],
-          isSent: !wasRcv
-        })
+        try {
+          let speech = JSON.parse(speech_blob);
+          let wasRcv = speech['senderKey'] == archive_key;
+          let totalKey = speech['identifier']+","+speech['senderKey'];
+          this.speechCollection.set(totalKey,{
+            icon: "sentiment_very_satisfied",
+            text: speech['content'],
+            contactID: archive_key,
+            isConfirmed: speech['signatureVerified'],
+            isSent: !wasRcv
+          });
+          this.make_good_speech();
+        } catch(err) {
+          return;
+        }
+        
       }
     );
     this.$electron.ipcRenderer.on(
@@ -194,6 +199,7 @@ export default {
       (evt, primary, secondary, timestamp) => {
         this.selfContactID = primary;
         this.connect_icon = "signal_cellular_4_bar";
+        this.connect = "Connected";
         this.rx("", primary, secondary);
       }
     );
@@ -218,6 +224,30 @@ export default {
         icon: "laptop"
       });
       this.$electron.ipcRenderer.send(dataName, primary, secondary);
+    },
+    make_good_contacts() {
+      let arr = Array.from(this.contactCollection);
+      this.contactObjects.length = 0;
+      for(var elem in arr) {
+        let key = arr[elem][0];
+        
+        let obj = this.contactCollection.get(key);
+        this.contactObjects.push( obj);
+      };
+    },
+    make_good_speech() {
+      let arr = Array.from(this.speechCollection)
+      this.speechObjects.length = 0;
+      for(var elem in arr) {
+        let key = arr[elem][0];
+        let obj = this.speechCollection.get(key);
+        console.log("obj");
+        console.log(obj.contactID);
+        if(obj.contactID == this.chatContactID)  {
+          console.log("match");
+          this.speechObjects.push(obj);
+        }
+      };
     },
     connect_action() {
       this.showConnect = true;
@@ -252,17 +282,17 @@ export default {
       this.showConnect = false;
       return;
     },
-    do_addContact(alias, pubkey) {
+    do_addContact(pubkey, alias) {
       this.showContact = false;
       if(alias.length > 0) {
-        this.send("doAddContact", alias, pubkey);
+        this.send("doAddContact", pubkey, alias);
       }
     },
-    do_removeContact(words) {
-      this.send("doRemoveContact", words);
+    do_removeContact(pubkey, alias) {
+      this.send("doRemoveContact", pubkey, alias);
     },
-    do_renameContact(words) {
-      this.send("doRenameContact", words);
+    do_renameContact(pubkey, alias) {
+      this.send("doRenameContact", pubkey, alias);
     },
     do_talkToContact(nextAlias, nextID) {
       this.chatAlias = nextAlias;
@@ -277,12 +307,6 @@ export default {
       this.send("doTalkToContact", nextID, nextAlias);
     },
     do_send(words, secondary) {
-      this.contentLines.push({
-        text: words,
-        contactID: secondary,
-        isConfirmed: false,
-        isSent: true
-      });
       this.send("doSend", words, secondary);
     }
   }

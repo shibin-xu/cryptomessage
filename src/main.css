@@ -1,6 +1,7 @@
 html, body {
     margin: 5px;
     padding: 0;
+    word-wrap: break-word;
 }
 
 div #chatbox {

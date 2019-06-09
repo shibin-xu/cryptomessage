@@ -123,9 +123,9 @@ public class Core {
         String alias = in.getSecondaryData();
         String result = contacts.put(publicKeyString, alias);
         if(result != null) {
-            SendRelay(zsocket, RelayType.UIResultForAddContact, "True", alias, date);
+            SendRelay(zsocket, RelayType.UIResultForRenameContact, "True", alias, date);
         } else {
-            SendRelay(zsocket, RelayType.UIResultForAddContact, "False", alias, date);
+            SendRelay(zsocket, RelayType.UIResultForAddContact, "True", alias, date);
         }
     }
 
@@ -148,7 +148,7 @@ public class Core {
         if(result != null) {
             SendRelay(zsocket, RelayType.UIResultForRenameContact, "True", newAlias, date);
         } else {
-            SendRelay(zsocket, RelayType.UIResultForAddContact, "False", newAlias, date);
+            SendRelay(zsocket, RelayType.UIResultForAddContact, "True", newAlias, date);
         }
     }
 
@@ -186,16 +186,23 @@ public class Core {
     private void SendSpeech(Relay relay) {
 
         String sendText = relay.getPrimaryData();
-        String senderKeyString = relay.getSecondaryData();
+        String destinationKeyString = relay.getSecondaryData();
+        String destinationAlias = "unk";
+        if(this.contacts.containsKey(destinationKeyString))
+        {
+            destinationAlias = this.contacts.get(destinationKeyString);
+        }
+        PublicKey recipient = publicKey; // FIXME
+        String publicKeyString = getKeyAsString(publicKey);
         try {
             String hashOfLastMessage = "fix";
             if(hashOfLastMessage == null)
             {
                 hashOfLastMessage = PasswordUtil.hash("");
             }
-            Message message = CoreMessageUtil.makeMessage(publicKey, sendText, hashOfLastMessage, senderKeyString);
-            SendResponse sendResponse = CoreMessageUtil.sendMessage(publicKey, privateKey, message);
-            if(sendResponse == null)
+            Message message = CoreMessageUtil.makeMessage(recipient, sendText, hashOfLastMessage, publicKeyString);
+            SendResponse sendResponse = CoreMessageUtil.sendMessage(recipient, privateKey, message);
+            if(sendResponse == null || !sendResponse.isSuccess())
             {
                 SendRelay(zsocket, RelayType.UIResultForSpeechSend, sendText, "False", this.date);
                 return;
@@ -206,7 +213,16 @@ public class Core {
             SendRelay(zsocket, RelayType.UIResultForSpeechSend, sendText, "False", this.date);
             return;
         }
+        
         SendRelay(zsocket, RelayType.UIResultForSpeechSend, sendText, "True", this.date);
+    
+        long speechTime = date.getTime();
+        Speech speech = new Speech(1, publicKeyString, destinationAlias, sendText, speechTime);
+        speech.Destination(destinationKeyString);
+        speech.Verify(true, true);
+        archive.add(speech);
+        String serialized = gson.toJson(speech);
+        SendRelay(zsocket, RelayType.UISpeechReceive, serialized, publicKeyString, this.date);
     }
 
     public Core() {
@@ -272,12 +288,13 @@ public class Core {
                     GetAllContact();
                     break;
                 case CRYPTOFakeReceive:
-                    Speech speech = CoreFakeUtil.FakeRecvSpeech(inputRelay.getPrimaryData(), 
+                    String senderKey = inputRelay.getPrimaryData();
+                    Speech speech = CoreFakeUtil.FakeRecvSpeech(senderKey, 
                         inputRelay.getSecondaryData(), publicKey, contacts, date);
                     if(speech != null) {
                         archive.add(speech);
                         String serialized = gson.toJson(speech);
-                        SendRelay(zsocket, RelayType.UISpeechReceive, serialized, "", date);
+                        SendRelay(zsocket, RelayType.UISpeechReceive, serialized, senderKey, date);
                     }
                     break;
                 }

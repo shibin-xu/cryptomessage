@@ -1,17 +1,17 @@
 <template>
   <v-container>
-    <v-layout column>
+    <v-layout column justify-top>
       <v-flex>
         <h1 class="centered">{{contactName}}</h1>
         <h4 class="centered">{{contactID}}</h4>
       </v-flex>
-      <div ref="chatDiv" style=" background: gray; overflow: auto; height:60vh; width: 65vw">
+      <div ref="chatDiv" style=" background: #525D68; overflow: auto; height:50vh; width: 65vw">
 
         <v-container>
           <ChatLine 
-          v-for="line in chatLines" 
-          v-bind:class="{ 'confirm':line.isConfirmed, 'fromSelf':line.isSent }"
-          :key="line.id" :line="line"/>
+          v-for="speech in speechObjects" 
+          v-bind:class="{ 'confirm':speech.isConfirmed, 'fromSelf':speech.isSent }"
+          :key="speech.identifier" :speech="speech"/>
         </v-container>
       </div>
       <v-form>
@@ -48,7 +48,7 @@ export default {
   props: {
     contactName: String,
     contactID: String,
-    chatLines: Array
+    speechObjects: Array
   },
   data: () => ({
     message: "Hey!",
