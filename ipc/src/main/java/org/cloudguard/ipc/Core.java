@@ -116,7 +116,10 @@ public class Core {
         try {
             if (getResponse != null) {
                 //FIXME
-                CoreMessageUtil.readMessage(getResponse.getEnvelopes(), privateKey, envelopeMap);
+                System.out.println("getResponse = " + getResponse);
+                System.out.println();
+                //CoreMessageUtil.readMessage(getResponse.getEnvelopes(), privateKey, envelopeMap);
+                CoreMessageUtil.readMessage(getResponse.getEnvelopes(), privateKey, envelopeMap, speechMap);
                 //COPY TO speechMap
             }
         } catch (Exception e) {
@@ -134,6 +137,7 @@ public class Core {
         } else {
             SendRelay(zsocket, RelayType.UIResultForAddContact, "True", alias, date);
         }
+        GetAllContact();
     }
 
     private void RemoveContact(String publicKeyString, String alias) {

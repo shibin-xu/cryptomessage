@@ -72,7 +72,8 @@ public class CoreMessageUtil {
     }
 
     public static void readMessage(List<Envelope> list, PrivateKey privateKey,
-                                    Map<String, List<Envelope>> publicKey2Envelope) throws
+                                    Map<String, List<Envelope>> publicKey2Envelope,
+                                   Map<String, List<Speech>> speechMap) throws
             NoSuchPaddingException,
             NoSuchAlgorithmException,
             IOException,
@@ -92,30 +93,37 @@ public class CoreMessageUtil {
             PublicKey senderPublicKey = RSAEncryptUtil.getPublicKeyFromString(message.getSenderPublicKey());
 
             boolean verified = RSAEncryptUtil.verify(gson.toJson(message), envelope.getSignature(), senderPublicKey);
-            if (verified) {
-                List<Envelope> envelopes;
-                if (publicKey2Envelope.containsKey(message.getSenderPublicKey())) {
-                    envelopes = publicKey2Envelope.get(message.getSenderPublicKey());
-                } else {
-                    envelopes = new ArrayList<>();
-                    publicKey2Envelope.put(message.getSenderPublicKey(), envelopes);
-                }
-
-                String expectedHash = PasswordUtil.hash("");
-                if (!envelopes.isEmpty()) {
-                    expectedHash = PasswordUtil.hash(gson.toJson(envelopes.get(envelopes.size() - 1).getMessage()));
-                }
-
-                if (expectedHash.equals(message.getHashOfLastMessage())) {
-                    String aesKey = RSAEncryptUtil.decrypt(message.getEncryptedAESKey(), privateKey);
-                    String decryptedBody = AESEncryptUtil.decrypt(message.getBody(), Base64.decodeBase64(aesKey));
-
-                    System.out.println(" Message = " + decryptedBody);
-                    System.out.println();
-
-                    envelopes.add(envelope);
-                }
+//            if (verified) {
+//
+//            }
+            List<Envelope> envelopes;
+            if (publicKey2Envelope.containsKey(message.getSenderPublicKey())) {
+                envelopes = publicKey2Envelope.get(message.getSenderPublicKey());
+            } else {
+                envelopes = new ArrayList<>();
+                publicKey2Envelope.put(message.getSenderPublicKey(), envelopes);
             }
+
+            String expectedHash = PasswordUtil.hash("");
+            if (!envelopes.isEmpty()) {
+                expectedHash = PasswordUtil.hash(gson.toJson(envelopes.get(envelopes.size() - 1).getMessage()));
+            }
+
+            boolean hashMatched = expectedHash.equals(message.getHashOfLastMessage());
+//            if () {
+//
+//            }
+            String aesKey = RSAEncryptUtil.decrypt(message.getEncryptedAESKey(), privateKey);
+            String decryptedBody = AESEncryptUtil.decrypt(message.getBody(), Base64.decodeBase64(aesKey));
+
+            System.out.println(" Message = " + decryptedBody);
+            System.out.println();
+//                    Speech speech = new Speech();
+            Speech aliceOne = new Speech(0, message.getSenderPublicKey(), "", decryptedBody, message.getTime());
+            aliceOne.Destination(envelope.getRecipientRSAPublicKey());
+            aliceOne.Verify(hashMatched, verified);
+
+            envelopes.add(envelope);
         }
     }
 }
