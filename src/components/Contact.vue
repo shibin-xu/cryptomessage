@@ -2,7 +2,7 @@
     <v-list>
       <v-layout row align-center>
         <v-flex xs6>
-          <v-subheader>{{contacts}}</v-subheader>
+          <v-subheader>{{contacts}} {{selfKey}}</v-subheader>
         </v-flex>
       </v-layout>
       <div ref="contacDiv" style=" background: #0F4D8E; overflow: auto; height:25vh; width: 65vw">
@@ -12,14 +12,6 @@
         :obj="obj"
       />
       </div>
-      <v-list-tile @click="clickedRefresh">
-        <v-list-tile-action>
-          <v-icon>{{ refreshIcon }}</v-icon>
-        </v-list-tile-action>
-        <v-list-tile-content>
-          <v-list-tile-title class="grey--text">{{ refreshText }}</v-list-tile-title>
-        </v-list-tile-content>
-      </v-list-tile>
       <v-list-tile @click="clickedAdd">
         <v-list-tile-action>
           <v-icon>{{ addIcon }}</v-icon>
@@ -38,7 +30,8 @@ export default {
     ContactFace
   },
   props: {
-    contactObjects: Array
+    contactObjects: Array,
+    selfKey: String
   },
   data: () => ({
     contacts: "Contact List",

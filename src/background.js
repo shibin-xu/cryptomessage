@@ -138,11 +138,6 @@ function connectToZmq() {
     let blob = makeJson('CRYPTORenameContact', valone, valtwo, d.getTime())
     zmqClient.send(blob)
   });
-  ipcMain.on('doGetAllContact', () => {
-    let blob = makeJson('CRYPTOGetAllContact',"-","-", d.getTime())
-    zmqClient.send(blob)
-  });
-  
   ipcMain.on('doTalkToContact', (event, valone, valtwo) => {
     let blob = makeJson('CRYPTOGetContactArchive', valone, valtwo, d.getTime())
     zmqClient.send(blob)

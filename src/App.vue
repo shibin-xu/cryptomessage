@@ -11,27 +11,28 @@
       <v-list>
         <v-layout row align-center>
           <v-flex xs8>
-            <v-img
-                class="mb-3"
-                contain
-                height="128"
-                src="assets\xtmsg.svg"
-              ></v-img>
+            <v-img class="mb-3" contain height="128" src="assets\xtmsg.svg"></v-img>
           </v-flex>
         </v-layout>
         <v-list-tile>
           <v-flex xs4>
-            <v-btn @click="connect_action" color="indigo" dark>{{ connect_text }}
+            <v-btn @click="connect_action" color="indigo" dark>
+              {{ connect_text }}
               <v-icon dark right>{{ connect_icon }}</v-icon>
             </v-btn>
-            <v-btn  :disabled="isConnected == false" @click="toggle_tick" color="indigo" dark>{{ tick_text }}
+            <v-btn :disabled="isConnected == false" @click="toggle_tick" color="indigo" dark>
+              {{ tick_text }}
               <v-icon dark right>{{ tick_icon }}</v-icon>
             </v-btn>
-            <v-content>
-            </v-content>
+            <v-content></v-content>
           </v-flex>
         </v-list-tile>
-        <Contact @talk="do_talkToContact" @open="contact_action" @refresh="contact_refresh" :contactObjects="contactObjects"/>
+        <Contact
+          @talk="do_talkToContact"
+          @open="contact_action"
+          :selfKey="selfContactShort"
+          :contactObjects="contactObjects"
+        />
         <v-list-tile @click="settings_action">
           <v-list-tile-action>
             <v-icon>{{ settings_icon }}</v-icon>
@@ -118,17 +119,16 @@ export default {
     chatContactID: "0",
     chatNextIdentifier: 1,
     selfContactID: "--",
+    selfContactShort: "--",
     consoleLines: [{ icon: "launch", text: "Start" }],
     contactCollection: new Map(),
     speechCollection: new Map(),
     contactObjects: [],
-    speechObjects: [],
+    speechObjects: []
   }),
-  created () {
-    
-  },
-  beforeDestroy () {
-    clearInterval(this.ticking)
+  created() {},
+  beforeDestroy() {
+    clearInterval(this.ticking);
   },
   mounted() {
     this.$electron.ipcRenderer.on(
@@ -153,9 +153,9 @@ export default {
       "UISpeechNextIdentifier",
       (evt, primary, secondary, timestamp) => {
         this.rx("nextid", primary, secondary);
-        
+
         let archive_key = secondary;
-        if(archive_key == this.chatContactID) {
+        if (archive_key == this.chatContactID) {
           this.chatNextIdentifier = parseInt(primary);
         }
       }
@@ -163,14 +163,11 @@ export default {
     this.$electron.ipcRenderer.on(
       "UIResultForContact",
       (evt, primary, secondary, timestamp) => {
-        
         this.contactCollection.set(primary, {
           contactID: primary,
           alias: secondary,
           icon: "face"
         });
-        let x = this.contactCollection.get(primary);
-        console.log("add"+x);
         this.make_good_contacts();
         this.rx("contact", primary, secondary);
       }
@@ -183,33 +180,34 @@ export default {
         let archive_key = secondary;
         try {
           let speech = JSON.parse(speech_blob);
-          let wasRcv = speech['senderKey'] == archive_key;
-          let totalKey = speech['identifier']+","+speech['senderKey'];
-          this.speechCollection.set(totalKey,{
+          let wasRcv = speech["senderKey"] == archive_key;
+          let totalKey = speech["identifier"] + "," + speech["senderKey"];
+          this.speechCollection.set(totalKey, {
             icon: "sentiment_very_satisfied",
-            text: speech['content'],
+            identifier: speech["identifier"],
+            text: speech["content"],
             contactID: archive_key,
-            isConfirmed: speech['signatureVerified'],
+            isConfirmed: speech["signatureVerified"],
             isSent: !wasRcv
           });
           this.make_good_speech();
-        } catch(err) {
+        } catch (err) {
           return;
         }
-        
       }
     );
     this.$electron.ipcRenderer.on(
       "UIPublicKey",
       (evt, primary, secondary, timestamp) => {
         this.selfContactID = primary;
+        this.selfContactShort = primary.substr(48, 12);
         this.connect_icon = "signal_cellular_4_bar";
         this.connect_text = "Connected";
         this.isConnected = true;
         this.rx("", primary, secondary);
       }
     );
-    
+
     this.$electron.ipcRenderer.on(
       "UISecurity",
       (evt, primary, secondary, timestamp) => {
@@ -218,15 +216,15 @@ export default {
     );
   },
   methods: {
-    doTick () {
+    doTick() {
       this.ticking = setInterval(() => {
-        if(this.isConnected) {
+        if (this.isConnected) {
           this.send("doTick");
           this.tick_text = "Disable Tick";
         }
-      }, 3000)
+      }, 3000);
     },
-    toggle_tick () {
+    toggle_tick() {
       this.doTick();
       this.tick_icon = "sync";
     },
@@ -246,46 +244,37 @@ export default {
     make_good_contacts() {
       let arr = Array.from(this.contactCollection);
       this.contactObjects.length = 0;
-      for(var elem in arr) {
+      for (var elem in arr) {
         let key = arr[elem][0];
-        
+
         let obj = this.contactCollection.get(key);
-        this.contactObjects.push( obj);
-      };
+        this.contactObjects.push(obj);
+      }
     },
     make_good_speech() {
-      let arr = Array.from(this.speechCollection)
+      let arr = Array.from(this.speechCollection);
       this.speechObjects.length = 0;
-      for(var elem in arr) {
+      for (var elem in arr) {
         let key = arr[elem][0];
         let obj = this.speechCollection.get(key);
-        console.log("obj");
-        console.log(obj.contactID);
-        if(obj.contactID == this.chatContactID)  {
-          console.log("match");
+        if (obj.contactID == this.chatContactID) {
           this.speechObjects.push(obj);
         }
-      };
+      }
     },
     connect_action() {
       this.showConnect = true;
       return;
     },
     settings_action() {
-      
-            //My Public Key: {{selfContactID}}
+      //My Public Key: {{selfContactID}}
     },
     contact_action() {
-      console.log("hi");
       this.showContact = true;
       return;
     },
-    contact_refresh() {
-      this.send("doGetAllContact");
-      return;
-    },
     fakeget_action() {
-      this.send("doFakeGet",this.chatContactID);
+      this.send("doFakeGet", this.chatContactID);
       return;
     },
     fakefill_action() {
@@ -301,7 +290,7 @@ export default {
     },
     do_addContact(pubkey, alias) {
       this.showContact = false;
-      if(alias.length > 0) {
+      if (alias.length > 0) {
         this.send("doAddContact", pubkey, alias);
       }
     },
@@ -313,14 +302,17 @@ export default {
     },
     do_talkToContact(nextAlias, nextID) {
       this.chatAlias = nextAlias;
-      this.chatContactID = nextID;
-      for (var i in this.contactList) {
-        if (this.contactList[i].contactID == this.chatContactID) {
-          this.contactList[i].icon = "chat_bubble";
-        } else {
-          this.contactList[i].icon = "face";
-        }
+      if (this.contactCollection.has(this.chatContactID)) {
+        let prev = this.contactCollection.get(this.chatContactID);
+        prev.icon = "face";
       }
+      this.contactCollection[this.chatContactID];
+      this.chatContactID = nextID;
+      if (this.contactCollection.has(this.chatContactID)) {
+        let next = this.contactCollection.get(this.chatContactID);
+        next.icon = "chat_bubble";
+      }
+      this.make_good_contacts();
       this.send("doTalkToContact", nextID, nextAlias);
     },
     do_send(words, secondary) {

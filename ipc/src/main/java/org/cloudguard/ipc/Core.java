@@ -44,7 +44,7 @@ public class Core {
 
         Relay relay = new Relay(type, payload, sender, 2);
         String serialized = gson.toJson(relay);
-        System.out.println("BufferToUI: " + relay.getType());
+        System.out.println("ToUI: " + relay.getType());
         zbuffer.add(serialized);
     }
 
@@ -73,6 +73,7 @@ public class Core {
 
         try {
             if (getResponse != null) {
+                //FIXME
                 CoreMessageUtil.readMessage(getResponse.getEnvelopes(), privateKey, envelopeMap);
             }
         } catch (Exception e) {
@@ -133,6 +134,8 @@ public class Core {
             cookieToken = loginFinishResponse.getToken();
 
             SendRelay(zsocket, RelayType.UIResultForConnect, "True", "True", date);
+            
+            GetAllContact();
         } catch (Exception e) {
             System.out.println("failed to login finish = " + e);
             SendRelay(zsocket, RelayType.UIResultForConnect, "True", "False", date);
@@ -197,6 +200,9 @@ public class Core {
                 if (isSentFromContact || isReceiveByContact) {
                     SendRelay(zsocket, RelayType.UISpeechUpdate, gson.toJson(speech), contactKey, date);
                 }
+            }
+            if(clientSendCount == 0) {
+                SendRelay(zsocket, RelayType.UISpeechUpdate, "", contactKey, date);
             }
             Integer nextIdentifier = clientSendCount;
             nextIdentifiers.put(contactKey, 100 + nextIdentifier);
@@ -311,9 +317,6 @@ public class Core {
                     break;
                 case CRYPTORenameContact:
                     RenameContact(inputRelay);
-                    break;
-                case CRYPTOGetAllContact:
-                    GetAllContact();
                     break;
                 case CRYPTOGetContactArchive:
                     GetContactArchive(inputRelay.getPrimaryData());

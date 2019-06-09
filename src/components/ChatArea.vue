@@ -3,7 +3,6 @@
     <v-layout column justify-top>
       <v-flex>
         <h1 class="centered">{{contactName}}</h1>
-        <h4 class="centered">{{contactID}}</h4>
       </v-flex>
       <div ref="chatDiv" style=" background: #525D68; overflow: auto; height:50vh; width: 65vw">
 

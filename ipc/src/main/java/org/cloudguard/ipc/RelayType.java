@@ -23,7 +23,6 @@ public enum RelayType {
     CRYPTORemoveContact,
     CRYPTORenameContact,
     
-    CRYPTOGetAllContact,
     CRYPTOGetContactArchive,
 
     CRYPTOSend,

@@ -38,6 +38,7 @@ public class CoreKeyUtil {
         {
             return null;
         }
+        System.out.println("pub"+keyBytes.length);
 
         X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
         KeyFactory kf = KeyFactory.getInstance("RSA");
@@ -48,9 +49,11 @@ public class CoreKeyUtil {
         InvalidKeySpecException
     {
         byte[] keyBytes = Base64.decodeBase64(text);
-        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
-        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-        return keyFactory.generatePublic(keySpec);
+        
+        System.out.println("pub"+keyBytes.length);
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+        return kf.generatePublic(spec);
     }
 
     public static void SavePublicKey(PublicKey publicKey, String filename) throws IOException

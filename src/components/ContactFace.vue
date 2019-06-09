@@ -5,7 +5,7 @@
     </v-list-tile-action>
     <v-list-tile-content>
       <v-list-tile-title>{{ obj.alias }}</v-list-tile-title>
-      {{obj.contactID}}
+      {{shortID}}
     </v-list-tile-content>
   </v-list-tile>
 </template>
@@ -14,9 +14,14 @@
 export default {
   props: {
     obj: {
-      contactID: "abda11",
-      alias: "Alice",
+      contactID: "abc",
+      alias: "Abc",
       icon: "widgets",
+    }
+  },
+  computed: {
+    shortID() {
+      return this.obj.contactID.substr(48, 12);
     }
   },
   methods: {
