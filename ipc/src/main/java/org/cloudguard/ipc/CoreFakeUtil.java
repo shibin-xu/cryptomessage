@@ -8,10 +8,10 @@ import static org.cloudguard.crypto.RSAEncryptUtil.getKeyAsString;
 public class CoreFakeUtil {
 
         
-    public static void FakeFill(Map<String, String> contacts, List<Speech> archive, PublicKey publicKey) {
+    public static void FakeFill(Map<String, String> contacts, Map<String, List<Speech>> speechMap, PublicKey publicKey) {
         try {  
             contacts.clear();
-            archive.clear();
+            speechMap.clear();
             String selfKey = getKeyAsString(publicKey);
             String aliceKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAn0XjGCBqN4jvOB/wa2DK4FKm9DVY4Q+sH+ySNKkvwA0QVZ/zsmU1FwnUoBoRsgL3LwJLSevD73EEwhWbzbinA1AphW45pWka+JBDhJYL5dnHE2e9auL4Hy7oCvGywl52hpnd0vYPQu7uwuM5dZR2uB2w8jzqaZoTssEYC598Wr0DxigNKGsR6Wu5/9KTUtU4wYZlORKni8w6kJLO0KfKVPq8iA4GNsQXP6W1uz4U6r1q3pWPANXJRblFqjNKFRnnYzgw605lFKxhpY6WUxX06xsgdpNPBRjqtHBDv+t0IdUu5Mh+Ocf5D9XULNb723+E15wHrYaS64F5Ns6cOpkjTwIDAQAB";
             String bobKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiUyC4n38R9S6VUY8qWxi+/twgLkZOtB2QTPu199Sk2jdra0F9KdHiv3Olg4IAc56flyKUYhBGm4SD1osjNNHHWjPK2X/nCPEiIczG2a2CD1C3RaMZa1dc72cgLK/ssRrugLHF0Tw4FtPSRs3MGdwXcf2LGsoVQpPIe1YlgfFTUbWCdrQ3UOW8pLUduacrrcEAZScHPBVXqBidDO3w5RRVn5J3qff/7p8OgeICRpaNc48T8/ZWEzHNUx9IXzPZshrBKyi7nhh5Rk6KTZGB/L+8a8LXcknVqbbwntIyFBN2+09aMy1LFQ4Pyy4V3IR88A7nOn4tE1PgwIvm6mme4d7jwIDAQAB";
@@ -21,6 +21,14 @@ public class CoreFakeUtil {
             contacts.put(bobKey,"Bob");
             contacts.put(charlesKey,"Charles");
             contacts.put(spamKey,spamKey.substring(48, 60));
+            List<Speech> emptyAlice = new ArrayList<>();
+            speechMap.put(aliceKey, emptyAlice);
+            List<Speech> emptyBob = new ArrayList<>();
+            speechMap.put(bobKey, emptyBob);
+            List<Speech> emptyCharles = new ArrayList<>();
+            speechMap.put(charlesKey, emptyCharles);
+            List<Speech> emptySpam = new ArrayList<>();
+            speechMap.put(spamKey, emptySpam);
             System.out.println("FakeFill contacts ");
             Speech aliceOne = new Speech(0, aliceKey, contacts.get(aliceKey), "Hello this is alice", 123);
             aliceOne.Destination(selfKey);
@@ -31,18 +39,18 @@ public class CoreFakeUtil {
             Speech aliceThree = new Speech(1, aliceKey, contacts.get(aliceKey), "Cool", 127);
             aliceThree.Destination(selfKey);
             aliceThree.Verify(true, false);
-            archive.add(aliceOne);
-            archive.add(aliceTwo);
-            archive.add(aliceThree);
+            speechMap.get(aliceKey).add(aliceOne);
+            speechMap.get(aliceKey).add(aliceTwo);
+            speechMap.get(aliceKey).add(aliceThree);
             Speech charlesOne = new Speech(0, charlesKey, contacts.get(charlesKey), "Hello this is charles", 123);
             charlesOne.Destination(selfKey);
             charlesOne.Verify(true, true);
-            archive.add(charlesOne);
+            speechMap.get(charlesKey).add(charlesOne);
             
             Speech spamOne = new Speech(0, spamKey, contacts.get(spamKey), "spaaam", 111);
             spamOne.Destination(selfKey);
             spamOne.Verify(false, false);
-            archive.add(spamOne);
+            speechMap.get(spamKey).add(spamOne);
             System.out.println("FakeFill archive ");
         } catch(Exception e) {
             System.out.println("e fake: " + e);

@@ -2,7 +2,7 @@
     <v-list>
       <v-layout row align-center>
         <v-flex xs6>
-          <v-subheader>{{contacts}} {{selfKey}}</v-subheader>
+          <v-subheader>{{contacts}}</v-subheader>
         </v-flex>
       </v-layout>
       <div ref="contacDiv" style=" background: #0F4D8E; overflow: auto; height:25vh; width: 65vw">
