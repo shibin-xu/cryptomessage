@@ -48,6 +48,7 @@ export default {
   props: {
     contactName: String,
     contactID: String,
+    nextIdentifier: Number,
     speechObjects: Array
   },
   data: () => ({

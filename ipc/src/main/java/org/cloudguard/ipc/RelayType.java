@@ -1,6 +1,8 @@
 package org.cloudguard.ipc;
 
 public enum RelayType {
+    CRYPTOTick,
+
     UIResultForConnect,
     UIResultForDisconnect,
     CRYPTOConnectWithKeys,
@@ -11,10 +13,10 @@ public enum RelayType {
     UIResultForRenameContact,
 
     UIResultForContact,
-    UIResultForArchive,
     
     UIResultForSpeechSend,
-    UISpeechReceive,
+    UISpeechUpdate,
+    UISpeechNextIdentifier,
 
 
     CRYPTOAddContact,

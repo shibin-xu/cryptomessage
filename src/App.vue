@@ -18,13 +18,18 @@
                 src="assets\xtmsg.svg"
               ></v-img>
           </v-flex>
-          <v-flex xs4>
-            <v-icon @click="connect_action">{{ connect_icon }}</v-icon>
-            {{ connect }}
-          </v-flex>
         </v-layout>
-        <v-list-tile @click="connect_action" style="height:200px, overflow:auto">
-          My Public Key: {{selfContactID}}
+        <v-list-tile>
+          <v-flex xs4>
+            <v-btn @click="connect_action" color="indigo" dark>{{ connect_text }}
+              <v-icon dark right>{{ connect_icon }}</v-icon>
+            </v-btn>
+            <v-btn  :disabled="isConnected == false" @click="toggle_tick" color="indigo" dark>{{ tick_text }}
+              <v-icon dark right>{{ tick_icon }}</v-icon>
+            </v-btn>
+            <v-content>
+            </v-content>
+          </v-flex>
         </v-list-tile>
         <Contact @talk="do_talkToContact" @open="contact_action" @refresh="contact_refresh" :contactObjects="contactObjects"/>
         <v-list-tile @click="settings_action">
@@ -67,6 +72,7 @@
               @transmit="do_send"
               :contactName="chatAlias"
               :contactID="chatContactID"
+              :nextIdentifier="chatNextIdentifier"
               :speechObjects="speechObjects"
             />
           </v-flex>
@@ -96,9 +102,13 @@ export default {
   },
   data: () => ({
     drawer: null,
+    ticking: null,
     title: "CryptoXT",
-    connect: "No connection",
+    connect_text: "No connection",
+    tick_text: "Enable Tick",
     connect_icon: "signal_wifi_off",
+    tick_icon: "sync_disabled",
+    isConnected: false,
     showConnect: true,
     showContact: false,
     settings: "Settings",
@@ -106,6 +116,7 @@ export default {
     contacts: "Contacts",
     chatAlias: "-",
     chatContactID: "0",
+    chatNextIdentifier: 1,
     selfContactID: "--",
     consoleLines: [{ icon: "launch", text: "Start" }],
     contactCollection: new Map(),
@@ -113,6 +124,12 @@ export default {
     contactObjects: [],
     speechObjects: [],
   }),
+  created () {
+    
+  },
+  beforeDestroy () {
+    clearInterval(this.ticking)
+  },
   mounted() {
     this.$electron.ipcRenderer.on(
       "UIResultForConnect",
@@ -133,25 +150,13 @@ export default {
       }
     );
     this.$electron.ipcRenderer.on(
-      "UISpeechReceive",
+      "UISpeechNextIdentifier",
       (evt, primary, secondary, timestamp) => {
-        this.rx("recieved", primary, secondary);
-        let speech_blob = primary;
+        this.rx("nextid", primary, secondary);
+        
         let archive_key = secondary;
-        try {
-          let speech = JSON.parse(speech_blob);
-          let wasRcv = speech['senderKey'] == archive_key;
-          let totalKey = speech['identifier']+","+speech['senderKey'];
-          this.speechCollection.set(totalKey,{
-            icon: "sentiment_neutral",
-            text: speech['content'],
-            contactID: archive_key,
-            isConfirmed: speech['signatureVerified'],
-            isSent: !wasRcv
-          });
-          this.make_good_speech();
-        } catch(err) {
-          return;
+        if(archive_key == this.chatContactID) {
+          this.chatNextIdentifier = parseInt(primary);
         }
       }
     );
@@ -171,7 +176,7 @@ export default {
       }
     );
     this.$electron.ipcRenderer.on(
-      "UIResultForArchive",
+      "UISpeechUpdate",
       (evt, primary, secondary, timestamp) => {
         this.rx("", primary, secondary);
         let speech_blob = primary;
@@ -199,7 +204,8 @@ export default {
       (evt, primary, secondary, timestamp) => {
         this.selfContactID = primary;
         this.connect_icon = "signal_cellular_4_bar";
-        this.connect = "Connected";
+        this.connect_text = "Connected";
+        this.isConnected = true;
         this.rx("", primary, secondary);
       }
     );
@@ -212,6 +218,18 @@ export default {
     );
   },
   methods: {
+    doTick () {
+      this.ticking = setInterval(() => {
+        if(this.isConnected) {
+          this.send("doTick");
+          this.tick_text = "Disable Tick";
+        }
+      }, 3000)
+    },
+    toggle_tick () {
+      this.doTick();
+      this.tick_icon = "sync";
+    },
     rx(dataName, primary, secondary) {
       this.consoleLines.push({
         text: dataName + ":  " + primary + "," + secondary,
@@ -253,7 +271,10 @@ export default {
       this.showConnect = true;
       return;
     },
-    
+    settings_action() {
+      
+            //My Public Key: {{selfContactID}}
+    },
     contact_action() {
       console.log("hi");
       this.showContact = true;
@@ -262,10 +283,6 @@ export default {
     contact_refresh() {
       this.send("doGetAllContact");
       return;
-    },
-    settings_action() {
-
-      
     },
     fakeget_action() {
       this.send("doFakeGet",this.chatContactID);

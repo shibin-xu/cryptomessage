@@ -1,5 +1,7 @@
 package org.cloudguard.ipc;
 
+import org.apache.commons.codec.binary.Base64;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.*;
@@ -40,6 +42,15 @@ public class CoreKeyUtil {
         X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
         KeyFactory kf = KeyFactory.getInstance("RSA");
         return kf.generatePublic(spec);
+    }
+    public static PublicKey GetPublicKeyFromText(String text) throws 
+        NoSuchAlgorithmException,
+        InvalidKeySpecException
+    {
+        byte[] keyBytes = Base64.decodeBase64(text);
+        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        return keyFactory.generatePublic(keySpec);
     }
 
     public static void SavePublicKey(PublicKey publicKey, String filename) throws IOException

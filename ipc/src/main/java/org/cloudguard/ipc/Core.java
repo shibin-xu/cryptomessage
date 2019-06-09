@@ -19,17 +19,19 @@ import org.zeromq.ZContext;
 public class Core {
 
     private Gson gson;
-    private KeyPair keyPair;
+    private Date date;
+    private String cookieToken;
+    private Queue<String> zbuffer;
+    private ZMQ.Socket zsocket;
+
     private PublicKey publicKey;
     private PrivateKey privateKey;
-    private ZMQ.Socket zsocket;
-    private Queue<String> zbuffer;
-    private Date date;
 
     private Map<String, String> contacts;
     private Map<String, String> lastHashes;
+    private Map<String, Integer> nextIdentifiers;
+    private Map<String, List<Envelope>> envelopeMap;
     private List<Speech> archive;
-
 
     private Relay ReadRelay(byte[] raw) {
 
@@ -42,7 +44,7 @@ public class Core {
 
         Relay relay = new Relay(type, payload, sender, 2);
         String serialized = gson.toJson(relay);
-        System.out.println("BufferToUI: " + serialized);
+        System.out.println("BufferToUI: " + relay.getType());
         zbuffer.add(serialized);
     }
 
@@ -54,39 +56,62 @@ public class Core {
 
     }
 
+    private void Tick() {
+
+        GetResponse getResponse = null;
+        try {
+            if (cookieToken != null) {
+                GetRequest getRequest = new GetRequest(cookieToken);
+                Request request = new Request(getRequest.getClass().getName(), gson.toJson(getRequest));
+                Response response = getResponse(request);
+                getResponse = gson.fromJson(response.getJson(), GetResponse.class);
+            }
+        } catch (Exception e) {
+
+            System.out.println("failed get = " + e);
+        }
+
+        try {
+            if (getResponse != null) {
+                CoreMessageUtil.readMessage(getResponse.getEnvelopes(), privateKey, envelopeMap);
+            }
+        } catch (Exception e) {
+
+            System.out.println("failed read = " + e);
+        }
+
+    }
 
     private void ConnectWithKeys(Relay in) {
-
-        gson = new Gson();
-        CryptoUtil.init();
 
         try {
             publicKey = CoreKeyUtil.GetPublicKey(in.getPrimaryData());
             privateKey = CoreKeyUtil.GetPrivateKey(in.getSecondaryData());
-        } catch(Exception e) {
-            System.out.println("e1 = " + e);
+        } catch (Exception e) {
+            System.out.println("failed to read key = " + e);
             publicKey = null;
             privateKey = null;
         }
-        
-        if(publicKey == null || privateKey == null) {
+
+        if (publicKey == null || privateKey == null) {
             try {
                 KeyPair keyPair = RSAEncryptUtil.generateKey();
                 publicKey = keyPair.getPublic();
                 privateKey = keyPair.getPrivate();
                 CoreKeyUtil.SavePublicKey(publicKey, in.getPrimaryData());
                 CoreKeyUtil.SavePrivateKey(privateKey, in.getSecondaryData());
-            } catch(Exception e) {
-                System.out.println("e2 = " + e);
+            } catch (Exception e) {
+                System.out.println("failed to save key = " + e);
                 SendRelay(zsocket, RelayType.UIResultForConnect, "False", "False", date);
             }
         }
+
+        String publicKeyString = getKeyAsString(publicKey);
         String n1 = "";
-        LoginPrepareResponse loginPrepareResponse= null; 
+        LoginPrepareResponse loginPrepareResponse = null;
         try {
             n1 = generateCookie();
-            String publicKeyString = getKeyAsString(publicKey);
-            SendRelay(zsocket, RelayType.UIPublicKey, publicKeyString,"pubkey", date);
+            SendRelay(zsocket, RelayType.UIPublicKey, publicKeyString, "pubkey", date);
 
             LoginPrepareRequest loginPrepareRequest = new LoginPrepareRequest(publicKeyString, n1);
             Request request = new Request(loginPrepareRequest.getClass().getName(), gson.toJson(loginPrepareRequest));
@@ -94,11 +119,10 @@ public class Core {
             loginPrepareResponse = gson.fromJson(response.getJson(), LoginPrepareResponse.class);
             SendRelay(zsocket, RelayType.UISecurity, "nonce", loginPrepareResponse.getNonce(), date);
         } catch (Exception e) {
-            System.out.println("e3 = " + e);
+            System.out.println("failed to login prepare = " + e);
         }
 
         try {
-            String publicKeyString = getKeyAsString(publicKey);
             String n2 = loginPrepareResponse.getNonce();
             String n1n2 = n1 + n2;
             String signature = RSAEncryptUtil.sign(n1n2, privateKey);
@@ -106,14 +130,11 @@ public class Core {
             Request request = new Request(loginFinishRequest.getClass().getName(), gson.toJson(loginFinishRequest));
             Response response = getResponse(request);
             LoginFinishResponse loginFinishResponse = gson.fromJson(response.getJson(), LoginFinishResponse.class);
-            
-            System.out.println("loginFinish = " + loginFinishResponse);
-            System.out.println();
-
+            cookieToken = loginFinishResponse.getToken();
 
             SendRelay(zsocket, RelayType.UIResultForConnect, "True", "True", date);
-        } catch(Exception e) {
-            System.out.println("e4 = " + e);
+        } catch (Exception e) {
+            System.out.println("failed to login finish = " + e);
             SendRelay(zsocket, RelayType.UIResultForConnect, "True", "False", date);
         }
     }
@@ -122,7 +143,7 @@ public class Core {
         String publicKeyString = in.getPrimaryData();
         String alias = in.getSecondaryData();
         String result = contacts.put(publicKeyString, alias);
-        if(result != null) {
+        if (result != null) {
             SendRelay(zsocket, RelayType.UIResultForRenameContact, "True", alias, date);
         } else {
             SendRelay(zsocket, RelayType.UIResultForAddContact, "True", alias, date);
@@ -132,9 +153,9 @@ public class Core {
     private void RemoveContact(Relay in) {
         String publicKeyString = in.getPrimaryData();
         String alias = in.getSecondaryData();
-        
+
         boolean removed = contacts.remove(publicKeyString, alias);
-        if(removed) {
+        if (removed) {
             SendRelay(zsocket, RelayType.UIResultForRemoveContact, "True", alias, date);
         } else {
             SendRelay(zsocket, RelayType.UIResultForRemoveContact, "False", alias, date);
@@ -145,7 +166,7 @@ public class Core {
         String publicKeyString = in.getPrimaryData();
         String newAlias = in.getSecondaryData();
         String result = contacts.put(publicKeyString, newAlias);
-        if(result != null) {
+        if (result != null) {
             SendRelay(zsocket, RelayType.UIResultForRenameContact, "True", newAlias, date);
         } else {
             SendRelay(zsocket, RelayType.UIResultForAddContact, "True", newAlias, date);
@@ -154,85 +175,99 @@ public class Core {
 
     private void GetAllContact() {
         try {
-            for(Map.Entry<String, String> entry : contacts.entrySet()) {
+            for (Map.Entry<String, String> entry : contacts.entrySet()) {
                 String key = entry.getKey();
                 String value = entry.getValue();
                 SendRelay(zsocket, RelayType.UIResultForContact, key, value, date);
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             System.out.println("get contact exception = " + e);
         }
     }
 
-    private void GetContactArchive(Relay in) {
+    private void GetContactArchive(String contactKey) {
         try {
-            String contactKey = in.getPrimaryData();
-            for(Speech speech : archive) {
-                String senderKey =  speech.getSenderKey();
-                String recipientKey = speech.getRecipientKey();
-                if (senderKey.equals(contactKey) || recipientKey.equals(contactKey)) {
-                    String serialized = gson.toJson(speech);
-                    SendRelay(zsocket, RelayType.UIResultForArchive, serialized, contactKey, date);
+            Integer clientSendCount = 0;
+            for (Speech speech : archive) {
+                boolean isSentFromContact = speech.getSenderKey().equals(contactKey);
+                boolean isReceiveByContact = speech.getRecipientKey().equals(contactKey);
+                if (isReceiveByContact) {
+                    clientSendCount++;
+                }
+                if (isSentFromContact || isReceiveByContact) {
+                    SendRelay(zsocket, RelayType.UISpeechUpdate, gson.toJson(speech), contactKey, date);
                 }
             }
-            SendRelay(zsocket, RelayType.UIResultForArchive, "", contactKey, date);
-        } catch(Exception e) {
-                
+            Integer nextIdentifier = clientSendCount;
+            nextIdentifiers.put(contactKey, 100 + nextIdentifier);
+            SendRelay(zsocket, RelayType.UISpeechNextIdentifier, Integer.toString(nextIdentifier), contactKey, date);
+        } catch (Exception e) {
+
             System.out.println("archive exception = " + e);
         }
-        
+
     }
 
     private void SendSpeech(Relay relay) {
 
+        String publicKeyString = getKeyAsString(publicKey);
         String sendText = relay.getPrimaryData();
         String destinationKeyString = relay.getSecondaryData();
-        String destinationAlias = "unk";
-        if(this.contacts.containsKey(destinationKeyString))
-        {
-            destinationAlias = this.contacts.get(destinationKeyString);
+        String destinationAlias = "unknown";
+        if (!contacts.containsKey(destinationKeyString)) {
+            contacts.put(destinationKeyString, destinationAlias);
         }
-        PublicKey recipient = publicKey; // FIXME
-        String publicKeyString = getKeyAsString(publicKey);
+        destinationAlias = this.contacts.get(destinationKeyString);
+
         try {
-            String hashOfLastMessage = "fix";
-            if(hashOfLastMessage == null)
-            {
-                hashOfLastMessage = PasswordUtil.hash("");
+            PublicKey recipient = CoreKeyUtil.GetPublicKeyFromText(destinationKeyString);
+            if (!lastHashes.containsKey(destinationKeyString)) {
+                lastHashes.put(destinationKeyString, PasswordUtil.hash(""));
             }
+            String hashOfLastMessage = lastHashes.get(destinationKeyString);
             Message message = CoreMessageUtil.makeMessage(recipient, sendText, hashOfLastMessage, publicKeyString);
             SendResponse sendResponse = CoreMessageUtil.sendMessage(recipient, privateKey, message);
-            if(sendResponse == null || !sendResponse.isSuccess())
-            {
+            if (sendResponse == null || !sendResponse.isSuccess()) {
                 SendRelay(zsocket, RelayType.UIResultForSpeechSend, sendText, "False", this.date);
                 return;
             }
-            
+
         } catch (Exception e) {
-            System.out.println("e5 = " + e);
+            System.out.println("Failed SendSpeech = " + e);
             SendRelay(zsocket, RelayType.UIResultForSpeechSend, sendText, "False", this.date);
             return;
         }
-        
-        SendRelay(zsocket, RelayType.UIResultForSpeechSend, sendText, "True", this.date);
-    
-        long speechTime = date.getTime();
-        Speech speech = new Speech(1, publicKeyString, destinationAlias, sendText, speechTime);
-        speech.Destination(destinationKeyString);
-        speech.Verify(true, true);
-        archive.add(speech);
-        String serialized = gson.toJson(speech);
-        SendRelay(zsocket, RelayType.UISpeechReceive, serialized, publicKeyString, this.date);
+
+        try {
+            SendRelay(zsocket, RelayType.UIResultForSpeechSend, sendText, "True", this.date);
+            if (!nextIdentifiers.containsKey(destinationKeyString)) {
+                nextIdentifiers.put(destinationKeyString, 100);
+            }
+            Integer identifier = nextIdentifiers.get(destinationKeyString);
+            Speech speech = new Speech(identifier, publicKeyString, destinationAlias, sendText, date.getTime());
+            speech.Destination(destinationKeyString);
+            speech.Verify(true, true);
+            archive.add(speech);
+
+            GetContactArchive(destinationKeyString);
+
+        } catch (Exception e) {
+            System.out.println("Failed SendSpeech = " + e);
+        }
     }
 
     public Core() {
-        date = new Date();
         gson = new Gson();
+        date = new Date();
+
+        cookieToken = null;
         zbuffer = new ArrayDeque<String>();
 
         lastHashes = new HashMap<String, String>();
         contacts = new HashMap<String, String>();
+        nextIdentifiers = new HashMap<String, Integer>();
         archive = new ArrayList<Speech>();
+        envelopeMap = new HashMap<String, List<Envelope>>();
 
         try {
             CryptoUtil.init();
@@ -259,6 +294,9 @@ public class Core {
                 switch (relayType) {
                 default:
                     break;
+                case CRYPTOTick:
+                    Tick();
+                    break;
                 case CRYPTOConnectWithKeys:
                     ConnectWithKeys(inputRelay);
                     break;
@@ -278,7 +316,7 @@ public class Core {
                     GetAllContact();
                     break;
                 case CRYPTOGetContactArchive:
-                    GetContactArchive(inputRelay);
+                    GetContactArchive(inputRelay.getPrimaryData());
                     break;
                 case CRYPTOSend:
                     SendSpeech(inputRelay);
@@ -289,32 +327,27 @@ public class Core {
                     break;
                 case CRYPTOFakeReceive:
                     String senderKey = inputRelay.getPrimaryData();
-                    Speech speech = CoreFakeUtil.FakeRecvSpeech(senderKey, 
-                        inputRelay.getSecondaryData(), publicKey, contacts, date);
-                    if(speech != null) {
+                    Speech speech = CoreFakeUtil.FakeRecvSpeech(senderKey, inputRelay.getSecondaryData(), publicKey,
+                            contacts, date);
+                    if (speech != null) {
                         archive.add(speech);
                         String serialized = gson.toJson(speech);
-                        SendRelay(zsocket, RelayType.UISpeechReceive, serialized, senderKey, date);
+                        SendRelay(zsocket, RelayType.UISpeechUpdate, serialized, senderKey, date);
                     }
                     break;
                 }
-                while(zbuffer.peek() != null) {
+                while (zbuffer.peek() != null) {
                     String serialized = zbuffer.remove();
-                    if(zbuffer.peek() != null)
-                    {
-                        zsocket.sendMore(serialized.getBytes(ZMQ.CHARSET));   
-                    }
-                    else
-                    {
+                    if (zbuffer.peek() != null) {
+                        zsocket.sendMore(serialized.getBytes(ZMQ.CHARSET));
+                    } else {
                         zsocket.send(serialized.getBytes(ZMQ.CHARSET), 0);
                     }
                 }
             }
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
 
-            System.out.println("e9 = " + e);
+            System.out.println("zsocket exception = " + e);
         }
     }
 }

@@ -160,6 +160,10 @@ function connectToZmq() {
     zmqClient.send(blob)
   });
 
+  ipcMain.on('doTick', (event, pubkey) => {
+    let blob = makeJson('CRYPTOTick',"","", d.getTime())
+    zmqClient.send(blob)
+  });
 
   zmqClient.on(`message`, function (a,b,c,d,e) {     
     

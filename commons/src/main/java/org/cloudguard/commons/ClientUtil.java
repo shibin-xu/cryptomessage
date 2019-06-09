@@ -70,7 +70,7 @@ public class ClientUtil {
     }
 
     private static SSLSocket establishConnection() {
-	init();
+	    init();
         if (!initialized) {
             //specifing the trustStore file which contains the certificate & public of the server
             System.setProperty("javax.net.ssl.trustStore", "TrustWorthyStore.jts");
