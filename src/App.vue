@@ -16,11 +16,11 @@
         </v-layout>
         <v-list-tile>
           <v-flex xs4>
-            <v-btn @click="connect_action" color="indigo" dark>
+            <v-btn @click="connect_action" :color="connect_color" dark>
               {{ connect_text }}
               <v-icon dark right>{{ connect_icon }}</v-icon>
             </v-btn>
-            <v-btn :disabled="isConnected == false" @click="toggle_tick" color="indigo" dark>
+            <v-btn :disabled="isConnected == false" @click="toggle_tick" :color="tick_color" dark>
               {{ tick_text }}
               <v-icon dark right>{{ tick_icon }}</v-icon>
             </v-btn>
@@ -109,7 +109,7 @@ export default {
     ticking: null,
     title: "CryptoXT",
     connect_text: "No connection",
-    tick_text: "Enable Tick",
+    tick_text: "Tick Disabled",
     connect_icon: "signal_wifi_off",
     tick_icon: "sync_disabled",
     isConnected: false,
@@ -122,6 +122,8 @@ export default {
     chatContactID: "0",
     selfContactID: "--",
     selfContactShort: "--",
+    connect_color:"grey",
+    tick_color:"grey",
     consoleLines: [{ icon: "launch", text: "Start" }],
     contactCollection: new Map(),
     speechCollection: new Map(),
@@ -175,13 +177,16 @@ export default {
             let wasRcv = speech["senderKey"] == archive_key;
             let totalIdentifier = speech["identifier"];
             let shortIdentifier = totalIdentifier.substr(0,4);
+            let timeStamp = "Jun 9 10PM";
             this.speechCollection.set(totalIdentifier, {
               icon: "sentiment_very_satisfied",
               totalIdentifier: totalIdentifier,
               shortIdentifier: shortIdentifier,
+              timeStamp: timeStamp,
               text: speech["content"],
               contactID: archive_key,
-              isConfirmed: speech["signatureVerified"],
+              isPreviousVerified: speech["previousVerified"],
+              isSignatureVerified: speech["signatureVerified"],
               isSent: !wasRcv
             });
           } catch (err) {
@@ -197,6 +202,7 @@ export default {
         this.selfContactID = primary;
         this.selfContactShort = primary.substr(48, 12);
         this.connect_icon = "signal_cellular_4_bar";
+        this.connect_color = "green";
         this.connect_text = "Connected";
         this.isConnected = true;
         this.doTick();
@@ -213,7 +219,8 @@ export default {
   },
   methods: {
     doTick() {
-      this.tick_text = "Disable Tick";
+      this.tick_text = "Tick Enabled";
+      this.tick_color = "green";
       this.tick_icon = "sync";
       this.ticking = setInterval(() => {
         if (this.isConnected) {
@@ -226,7 +233,8 @@ export default {
         this.doTick();
       } else {
         clearInterval(this.ticking);
-        this.tick_text = "Enable Tick";
+        this.tick_text = "Tick Disabled";
+        this.tick_color = "grey";
         this.tick_icon = "sync_disabled";
         this.ticking = null;
       }

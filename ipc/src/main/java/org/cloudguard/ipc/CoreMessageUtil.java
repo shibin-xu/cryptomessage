@@ -119,7 +119,7 @@ public class CoreMessageUtil {
             String aesKey = RSAEncryptUtil.decrypt(message.getEncryptedAESKey(), privateKey);
             String decryptedBody = AESEncryptUtil.decrypt(message.getBody(), Base64.decodeBase64(aesKey));
 
-            System.out.println("msg body = " + decryptedBody);
+            //System.out.println("msg body = " + decryptedBody);
             envelopes.add(envelope);
             String senderKeyString = message.getSenderPublicKey();
             
