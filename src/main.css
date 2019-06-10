@@ -16,18 +16,18 @@ div #chatline {
     margin: 5px;
     padding: 8px;
     margin-left: 5px;
-    margin-right: 55%;
+    margin-right: 44%;
     border-radius: 0px 9px 9px 10px;
     box-shadow: 4px 8px black;
     word-break: break-all; 
     word-wrap: break-word;
-    width: 200px;
+    width: 290px;
 }
 div #chatline.confirm {
     background: #999999;
 }
 div #chatline.fromSelf {
     border-radius: 9px 3px 9px  10px;
-    margin-left: 55%;
+    margin-left: 44%;
     margin-right: 5px;
 }

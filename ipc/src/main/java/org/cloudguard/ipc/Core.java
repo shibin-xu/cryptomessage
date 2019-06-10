@@ -115,7 +115,12 @@ public class Core {
 
         try {
             if (getResponse != null) {
-                CoreMessageUtil.readMessage(getResponse.getEnvelopes(), privateKey, envelopeMap, speechMap);
+                
+                ArrayList<Speech> speechBuffer = CoreMessageUtil.readMessage(getResponse.getEnvelopes(), privateKey, envelopeMap);
+                for(Speech speech : speechBuffer) {
+                    List<Speech> speechList = GetSpeechList(speech.getSenderKey());
+                    AddToSpeechList(speechList, speech);
+                }
                 GetContactArchive(contactKey);
             }
         } catch (Exception e) {
@@ -156,6 +161,8 @@ public class Core {
     }
 
     private void RemoveContact(String contactKeyString, String alias) {
+        
+        System.out.println("RemoveContact = " + contactKeyString);
         try {
             boolean removed = contacts.remove(contactKeyString, alias);
             if (removed) {
@@ -166,9 +173,12 @@ public class Core {
         } catch (Exception e) {
             System.out.println("rem contact exception = " + e);
         }
+        GetAllContact();
     }
 
     private void RenameContact(String contactKeyString, String alias) {
+        
+        System.out.println("RemoveContact = " + contactKeyString);
         try {
             String result = contacts.put(contactKeyString, alias);
             if (result != null) {
@@ -180,6 +190,7 @@ public class Core {
         } catch (Exception e) {
             System.out.println("ren contact exception = " + e);
         }
+        GetAllContact();
     }
 
     private void GetAllContact() {
@@ -218,7 +229,8 @@ public class Core {
 
     private List<Speech> GetSpeechList(String keyString) {
         if(!contacts.containsKey(keyString)) {
-            String alias = keyString.substring(10,20);
+            String alias = keyString.substring(44,54);
+            System.out.println("put alias = " + alias);
             contacts.put(keyString, alias);
             GetAllContact();
         }
@@ -229,6 +241,19 @@ public class Core {
         return speechMap.get(keyString);
     }
 
+    private void AddToSpeechList(List<Speech> speechList, Speech speech) {
+        if(speechList == null) {
+            return;
+        }
+        for (Iterator<Speech> it = speechList.iterator(); it.hasNext(); ) { 
+            Speech s = it.next();
+            if (s.getIdentifier() == speech.getIdentifier()) { 
+                it.remove(); 
+            } 
+        }
+        speechList.add(speech);
+    }
+
     private void AddLocalSpeech(String sendText, String identifier, String destinationKeyString) {
         try {
             String publicKeyString = getKeyAsString(publicKey);
@@ -236,13 +261,7 @@ public class Core {
 
             System.out.println("add local "+destinationKeyString);
             List<Speech> speechList = GetSpeechList(destinationKeyString);
-            for (Iterator<Speech> it = speechList.iterator(); it.hasNext(); ) { 
-                Speech s = it.next();
-                if (s.getIdentifier() == identifier) { 
-                    it.remove(); 
-                } 
-            }
-            speechList.add(speech);
+            AddToSpeechList(speechList, speech);
 
             GetContactArchive(destinationKeyString);
         } catch (Exception e) {
@@ -257,20 +276,13 @@ public class Core {
         
         try{
             String publicKeyString = getKeyAsString(publicKey);
-            Speech incomingSpeech = new Speech(identifier, senderKeyString, publicKeyString, 
+            Speech speech = new Speech(identifier, senderKeyString, publicKeyString, 
                 decryptedBody, hashMatched, signatureVerified, date.getTime());
 
             List<Speech> speechList = GetSpeechList(senderKeyString);
-            for (Iterator<Speech> it = speechList.iterator(); it.hasNext(); ) { 
-                Speech s = it.next();
-                if (s.getIdentifier() == identifier) { 
-                    it.remove(); 
-                } 
-            }
+            AddToSpeechList(speechList, speech);
             
-            if(speechList != null) {
-                speechList.add(incomingSpeech);
-            }
+
             GetContactArchive(senderKeyString);
 
         } catch (Exception e) {

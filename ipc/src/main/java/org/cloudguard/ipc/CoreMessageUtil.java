@@ -79,9 +79,8 @@ public class CoreMessageUtil {
         return getResponse;
     }
 
-    public static void readMessage(List<Envelope> list, PrivateKey privateKey,
-                                    Map<String, List<Envelope>> publicKey2Envelope,
-                                   Map<String, List<Speech>> speechMap) throws
+    public static ArrayList<Speech> readMessage(List<Envelope> list, PrivateKey privateKey,
+                                    Map<String, List<Envelope>> publicKey2Envelope) throws
             NoSuchPaddingException,
             NoSuchAlgorithmException,
             IOException,
@@ -93,6 +92,7 @@ public class CoreMessageUtil {
             NoSuchProviderException,
             SignatureException {
         Gson gson = new Gson();
+        ArrayList<Speech> outBuffer = new ArrayList<Speech>();
         for (Envelope envelope : list) {
             Message message = envelope.getMessage();
             //System.out.println("message: ");
@@ -119,28 +119,21 @@ public class CoreMessageUtil {
             String aesKey = RSAEncryptUtil.decrypt(message.getEncryptedAESKey(), privateKey);
             String decryptedBody = AESEncryptUtil.decrypt(message.getBody(), Base64.decodeBase64(aesKey));
 
-            //System.out.println("msg body = " + decryptedBody);
+
             envelopes.add(envelope);
             String senderKeyString = message.getSenderPublicKey();
             
+            String alias = senderKeyString.substring(44,54);
+            System.out.println("msg = " + decryptedBody+" hashMatched "+hashMatched+" alias "+alias);
+
             String identifier = PasswordUtil.hash(envelope.toString());
             String recipientKeyString = envelope.getRecipientRSAPublicKey();
             Speech senderSpeech = new Speech(identifier, senderKeyString, recipientKeyString, 
                 decryptedBody, hashMatched, signatureVerified, message.getTime());
 
-            if(!speechMap.containsKey(senderKeyString)) {
-                List<Speech> emptyList = new ArrayList<>();
-                speechMap.put(senderKeyString, emptyList);
-            }
-            List<Speech> speechList = speechMap.get(senderKeyString);
-            for (Iterator<Speech> it = speechList.iterator(); it.hasNext(); ) { 
-                Speech s = it.next();
-                if (s.getIdentifier() == identifier) { 
-                    it.remove(); 
-                } 
-            }
-            speechList.add(senderSpeech);
+            outBuffer.add(senderSpeech);
 
         }
+        return outBuffer;
     }
 }

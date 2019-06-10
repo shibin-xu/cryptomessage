@@ -1,12 +1,15 @@
 <template>
-  <v-list-tile @click="clickedTalk">
+  <v-list-tile>
     <v-list-tile-action>
-      <v-icon >{{ obj.icon }}</v-icon>
+      <v-icon large @click="clickedTalk">{{ obj.icon }}</v-icon>
     </v-list-tile-action>
-    <v-list-tile-content>
+    <div style="flex:1 1 90; flex-direction: column;">
       <v-list-tile-title>{{ obj.alias }}</v-list-tile-title>
-      {{shortID}}
-    </v-list-tile-content>
+      <v-list-tile-sub-title>{{shortID}}</v-list-tile-sub-title>
+    </div>
+    <v-list-tile-action>
+     <v-icon @click="clickedChange">settings</v-icon>
+    </v-list-tile-action>
   </v-list-tile>
 </template>
 
@@ -16,20 +19,21 @@ export default {
     obj: {
       contactID: "abc",
       alias: "Abc",
-      icon: "widgets",
+      icon: "widgets"
     }
   },
   computed: {
     shortID() {
-      return this.obj.contactID.substr(48, 12);
+      return "pubkey: " + this.obj.contactID.substr(44, 8);
     }
   },
   methods: {
     clickedTalk() {
       this.$emit("talkface", this.obj.alias, this.obj.contactID);
     },
-    delcontact() {
-      
+
+    clickedChange() {
+      this.$emit("changeface", this.obj.alias, this.obj.contactID);
     }
   }
 };

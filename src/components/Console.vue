@@ -1,5 +1,5 @@
 <template>
-  <div ref="conDiv"
+  <div v-if="shouldRender" ref="conDiv"
    style=" background: gray; overflow: auto; height:12vh; width: 65vw"
     >
 
@@ -23,6 +23,7 @@ export default {
     ConsoleLine
   },
   props: {
+    shouldRender: Boolean,
     consoleLines: Array
   },
   updated(){              

@@ -2,7 +2,7 @@
   <v-container>
     <v-layout column justify-top>
       <v-flex>
-        <h1 class="centered">{{contactName}}</h1>
+        <h1 class="centered">{{contactName}} {{count}}</h1>
         
       </v-flex>
       <div ref="chatDiv" style=" background: #525D68; overflow: auto; height:50vh; width: 65vw">
@@ -64,6 +64,9 @@ export default {
   computed: {
     icon() {
       return this.icons[this.iconIndex];
+    },
+    count() {
+      return this.speechObjects.length;
     }
   },
   methods: {

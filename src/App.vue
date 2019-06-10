@@ -29,6 +29,7 @@
         </v-list-tile>
         <Contact
           @talk="do_talkToContact"
+          @change="do_changeToContact"
           @open="contact_action"
           :selfKey="selfContactShort"
           :contactObjects="contactObjects"
@@ -67,9 +68,19 @@
           </v-flex>
           <v-flex>
             <AddContactDialog
-              :shouldRender="showContact"
+              :shouldRender="showAdd"
               @add_by_string="do_addContactString"
               @add_by_file="do_addContactFile"
+            />
+          </v-flex>
+          <v-flex>
+            <ChangeContactDialog
+              :shouldRender="showChange"
+              :alias="chatAlias"
+              :pubkeyString="chatContactID"
+              :shortKeyString="chatContactShort"
+              @delete_by_key="do_deleteContact"
+              @rename_by_key="do_renameContact"
             />
           </v-flex>
           <v-flex grow>
@@ -82,7 +93,7 @@
           </v-flex>
           <v-spacer></v-spacer>
           <v-flex grow>
-            <Console :consoleLines="consoleLines"/>
+            <Console :shouldRender="isConsoleEnabled" :consoleLines="consoleLines"/>
           </v-flex>
         </v-layout>
       </v-container>
@@ -93,6 +104,7 @@
 <script>
 import ConnectDialog from "./components/ConnectDialog.vue";
 import AddContactDialog from "./components/AddContactDialog.vue";
+import ChangeContactDialog from "./components/ChangeContactDialog.vue";
 import Contact from "./components/Contact.vue";
 import ChatArea from "./components/ChatArea.vue";
 import Console from "./components/Console.vue";
@@ -100,6 +112,7 @@ export default {
   components: {
     ConnectDialog,
     AddContactDialog,
+    ChangeContactDialog,
     Contact,
     ChatArea,
     Console
@@ -113,13 +126,16 @@ export default {
     connect_icon: "signal_wifi_off",
     tick_icon: "sync_disabled",
     isConnected: false,
+    isConsoleEnabled: false,
     showConnect: true,
-    showContact: false,
-    settings: "Settings",
-    settings_icon: "settings",
+    showAdd: false,
+    showChange: false,
+    settings: "Console",
+    settings_icon: "settings_remote",
     contacts: "Contacts",
-    chatAlias: "-",
+    chatAlias: "",
     chatContactID: "0",
+    chatContactShort: "0",
     selfContactID: "--",
     selfContactShort: "--",
     connect_color:"grey",
@@ -177,7 +193,8 @@ export default {
             let wasRcv = speech["senderKey"] == archive_key;
             let totalIdentifier = speech["identifier"];
             let shortIdentifier = totalIdentifier.substr(0,4);
-            let timeStamp = "Jun 9 10PM";
+            var d = new Date(speech["time"]);
+            let timeStamp = d.toLocaleString();
             this.speechCollection.set(totalIdentifier, {
               icon: "sentiment_very_satisfied",
               totalIdentifier: totalIdentifier,
@@ -200,7 +217,7 @@ export default {
       "UIPublicKey",
       (evt, primary, secondary, timestamp) => {
         this.selfContactID = primary;
-        this.selfContactShort = primary.substr(48, 12);
+        this.selfContactShort = primary.substr(44, 12);
         this.connect_icon = "signal_cellular_4_bar";
         this.connect_color = "green";
         this.connect_text = "Connected";
@@ -240,10 +257,12 @@ export default {
       }
     },
     rx(dataName, primary, secondary) {
-      this.consoleLines.push({
-        text: dataName + ":  " + primary + "," + secondary,
-        icon: "sync"
-      });
+      if(this.isConsoleEnabled) {
+        this.consoleLines.push({
+          text: dataName + ":  " + primary + "," + secondary,
+          icon: "sync"
+        });
+      }
     },
     send(dataName, primary, secondary) {
       this.consoleLines.push({
@@ -272,18 +291,17 @@ export default {
           this.speechObjects.push(obj);
         }
       }
-      let count = this.speechObjects.length;
-      console.log("make_good_speech for "+count);
     },
     connect_action() {
       this.showConnect = true;
       return;
     },
     settings_action() {
-      //My Public Key: {{selfContactID}}
+      this.isConsoleEnabled = !this.isConsoleEnabled;
     },
     contact_action() {
-      this.showContact = true;
+      console.log("contact_action");
+      this.showAdd = true;
       return;
     },
     fakespam_action() {
@@ -302,22 +320,36 @@ export default {
       return;
     },
     do_addContactString(pubkey, alias) {
-      this.showContact = false;
+      this.showAdd = false;
       if (pubkey.length > 0) {
         this.send("doAddContactString", pubkey, alias);
       }
     },
     do_addContactFile(pubfile, alias) {
-      this.showContact = false;
+      this.showAdd = false;
       if (pubfile.length > 0) {
         this.send("doAddContactFile", pubfile, alias);
       }
     },
-    do_removeContact(pubkey, alias) {
-      this.send("doRemoveContact", pubkey, alias);
+    do_deleteContact(pubkey, alias) {
+      if(pubkey.length > 0) {
+        this.send("doRemoveContact", pubkey, alias);
+      }
+      this.showChange = false;
     },
     do_renameContact(pubkey, alias) {
-      this.send("doRenameContact", pubkey, alias);
+      if(pubkey.length > 0) {
+        
+        console.log("do_renameContact");
+        this.send("doRenameContact", pubkey, alias);
+      }
+      this.showChange = false;
+    },
+    
+    do_changeToContact(nextAlias, nextID) {
+      this.do_talkToContact(nextAlias, nextID);
+      console.log("do_changeToContact");
+      this.showChange = true;
     },
     do_talkToContact(nextAlias, nextID) {
       this.chatAlias = nextAlias;
@@ -327,10 +359,12 @@ export default {
       }
       this.contactCollection[this.chatContactID];
       this.chatContactID = nextID;
+      this.chatContactShort = nextID.substr(44, 12);
       if (this.contactCollection.has(this.chatContactID)) {
         let next = this.contactCollection.get(this.chatContactID);
         next.icon = "chat_bubble";
       }
+      this.speechObjects.length = 0;
       this.make_good_contacts();
       this.send("doTalkToContact", nextID, nextAlias);
     },

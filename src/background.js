@@ -151,11 +151,11 @@ function connectToZmq() {
     zmqClient.send(blob)
   });
   ipcMain.on('doFakeSpam', () => {
-    let blob = makeJson('CRYPTOFakeSpam',"","this is spam", d.getTime())
+    let blob = makeJson('CRYPTOFakeSpam',"","This is spam", d.getTime())
     zmqClient.send(blob)
   });
   ipcMain.on('doFakeReal', (event, pubkey) => {
-    let blob = makeJson('CRYPTOFakeReceive',pubkey,"this is normal", d.getTime())
+    let blob = makeJson('CRYPTOFakeReceive',pubkey,"This is uncertain", d.getTime())
     zmqClient.send(blob)
   });
 

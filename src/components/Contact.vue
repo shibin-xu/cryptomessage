@@ -9,6 +9,7 @@
       <ContactFace
         v-for="obj in contactObjects"
         @talkface="clickedContact"
+        @changeface="clickedChange"
         :obj="obj"
       />
       </div>
@@ -17,7 +18,7 @@
           <v-icon>{{ addIcon }}</v-icon>
         </v-list-tile-action>
         <v-list-tile-content>
-          <v-list-tile-title class="grey--text">{{ addText }}</v-list-tile-title>
+          <v-list-tile-title class="yellow--text">{{ addText }}</v-list-tile-title>
         </v-list-tile-content>
       </v-list-tile>
     </v-list>
@@ -44,6 +45,9 @@ export default {
   methods: {
     clickedContact(alias, id) {
       this.$emit("talk", alias, id);
+    },
+    clickedChange(alias, id) {
+      this.$emit("change", alias, id);
     },
     clickedAdd() {
       this.$emit("open");
