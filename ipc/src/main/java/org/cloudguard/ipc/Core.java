@@ -392,12 +392,14 @@ public class Core {
         return r;
     }
 
-    private void SendRelay(ZMQ.Socket zsocket, RelayType type, String payload, String sender, Date date) {
+    private void SendRelay(ZMQ.Socket zsocket, RelayType type, String primary, String secondary, Date date) {
 
         try {
-            Relay relay = new Relay(type, payload, sender, 2);
+            Relay relay = new Relay(type, primary, secondary, 2);
             String serialized = gson.toJson(relay);
             System.out.println("ToUI: " + relay.getType());
+            System.out.println("....: " + primary);
+            System.out.println(".  .: " + secondary);
             zbuffer.add(serialized);
         } catch (Exception e) { 
             System.out.println("SendRelay exception = " + e);

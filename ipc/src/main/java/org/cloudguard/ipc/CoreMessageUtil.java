@@ -87,8 +87,8 @@ public class CoreMessageUtil {
         Gson gson = new Gson();
         for (Envelope envelope : list) {
             Message message = envelope.getMessage();
-            System.out.println("message = ");
-            System.out.println(message);
+            System.out.println("message: ");
+            //System.out.println(message);
             System.out.println("public key = " + message.getSenderPublicKey());
             PublicKey senderPublicKey = RSAEncryptUtil.getPublicKeyFromString(message.getSenderPublicKey());
 
@@ -116,12 +116,13 @@ public class CoreMessageUtil {
             String aesKey = RSAEncryptUtil.decrypt(message.getEncryptedAESKey(), privateKey);
             String decryptedBody = AESEncryptUtil.decrypt(message.getBody(), Base64.decodeBase64(aesKey));
 
-            System.out.println(" Message = " + decryptedBody);
+            System.out.println(" body = " + decryptedBody);
             System.out.println();
-//                    Speech speech = new Speech();
-            Speech aliceOne = new Speech(0, message.getSenderPublicKey(), "", decryptedBody, message.getTime());
-            aliceOne.Destination(envelope.getRecipientRSAPublicKey());
-            aliceOne.Verify(hashMatched, verified);
+            String senderKeyString = message.getSenderPublicKey();
+            Speech senderSpeech = new Speech(0, senderKeyString, "", decryptedBody, message.getTime());
+            senderSpeech.Destination(envelope.getRecipientRSAPublicKey());
+            senderSpeech.Verify(hashMatched, verified);
+            speechMap.get(senderKeyString).add(senderSpeech);
 
             envelopes.add(envelope);
         }
