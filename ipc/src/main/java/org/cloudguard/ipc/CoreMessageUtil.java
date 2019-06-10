@@ -121,7 +121,11 @@ public class CoreMessageUtil {
             String senderKeyString = message.getSenderPublicKey();
             Speech senderSpeech = new Speech(0, senderKeyString, "", decryptedBody, message.getTime());
             senderSpeech.Destination(envelope.getRecipientRSAPublicKey());
-            senderSpeech.Verify(hashMatched, verified);
+            senderSpeech.Verify(hashMatched, verified); 
+            if(!speechMap.containsKey(senderKeyString)) {
+                List<Speech> emptyList = new ArrayList<>();
+                speechMap.put(senderKeyString, emptyList);
+            }
             speechMap.get(senderKeyString).add(senderSpeech);
 
             envelopes.add(envelope);
