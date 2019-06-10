@@ -4,42 +4,26 @@ import java.util.Objects;
 
 public class Speech {
 
-    private int identifier;
+    private String identifier;
     private String senderKey; 
-    private String recipientKey;     
-    private String contactAlias;      
+    private String recipientKey;       
     private String content;   
     private boolean previousVerified;
     private boolean signatureVerified;
     private long time;             
 
-    public Speech(int identifier, String senderKey,  String contactAlias, String content, long time) {
+    public Speech(String identifier, String senderKey, String recipientKey, String content, boolean previous, boolean signature, long time) {
         this.identifier = identifier;
         this.senderKey = senderKey;
-        this.recipientKey = "";
-        this.contactAlias = contactAlias;
+        this.recipientKey = recipientKey;
         this.content = content;
-        this.previousVerified = false;
-        this.signatureVerified = false;
+        this.previousVerified = previous;
+        this.signatureVerified = signature;
         this.time = time;
     }
 
-    public void Destination(String recipientKey) {
-        this.recipientKey = recipientKey;
-    }
 
-    public void Verify(boolean previous, boolean signature) {
-        if(previous)
-        {
-            this.previousVerified = true;
-        }
-        if(signature)
-        {
-            this.signatureVerified = true;
-        }
-    }
-
-    public int getIdentifier() {
+    public String getIdentifier() {
         return this.identifier;
     }
     public String getSenderKey() {
@@ -48,13 +32,6 @@ public class Speech {
     public String getRecipientKey() {
         return this.recipientKey;
     }
-    public String getDisplay() {
-        if (this.contactAlias.length() > 1) {
-            return this.contactAlias;
-        }
-        return this.senderKey;
-    }
-
     public String getContent() {
         return this.content;
     }

@@ -58,9 +58,7 @@ public class CoreKeyUtil {
 
     public static void SavePublicKey(PublicKey publicKey, String filename) throws IOException
     {
-        System.out.println();
         System.out.println("SavePublicKey");
-        System.out.println();
         X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(publicKey.getEncoded());
         FileOutputStream fos = new FileOutputStream(filename);
         if(fos != null)

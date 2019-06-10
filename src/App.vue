@@ -41,20 +41,20 @@
             <v-list-tile-title>{{ settings }}</v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
-        <v-list-tile @click="fakeget_action">
+        <v-list-tile @click="fakespam_action">
           <v-list-tile-action>
             <v-icon>{{ widgets }}</v-icon>
           </v-list-tile-action>
           <v-list-tile-content>
-            <v-list-tile-title>Fake Get</v-list-tile-title>
+            <v-list-tile-title>Fake From Spam</v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
-        <v-list-tile @click="fakefill_action">
+        <v-list-tile @click="fakecontact_action">
           <v-list-tile-action>
             <v-icon>{{ wallpaper }}</v-icon>
           </v-list-tile-action>
           <v-list-tile-content>
-            <v-list-tile-title>Fake Fill</v-list-tile-title>
+            <v-list-tile-title>Fake From Contact</v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
       </v-list>
@@ -77,7 +77,6 @@
               @transmit="do_send"
               :contactName="chatAlias"
               :contactID="chatContactID"
-              :nextIdentifier="chatNextIdentifier"
               :speechObjects="speechObjects"
             />
           </v-flex>
@@ -121,7 +120,6 @@ export default {
     contacts: "Contacts",
     chatAlias: "-",
     chatContactID: "0",
-    chatNextIdentifier: 1,
     selfContactID: "--",
     selfContactShort: "--",
     consoleLines: [{ icon: "launch", text: "Start" }],
@@ -154,18 +152,7 @@ export default {
       }
     );
     this.$electron.ipcRenderer.on(
-      "UISpeechNextIdentifier",
-      (evt, primary, secondary, timestamp) => {
-        this.rx("nextid", primary, secondary);
-
-        let archive_key = secondary;
-        if (archive_key == this.chatContactID) {
-          this.chatNextIdentifier = parseInt(primary);
-        }
-      }
-    );
-    this.$electron.ipcRenderer.on(
-      "UIResultForContact",
+      "UIResultFoundContact",
       (evt, primary, secondary, timestamp) => {
         this.contactCollection.set(primary, {
           contactID: primary,
@@ -182,22 +169,26 @@ export default {
         this.rx("", primary, secondary);
         let speech_blob = primary;
         let archive_key = secondary;
-        try {
-          let speech = JSON.parse(speech_blob);
-          let wasRcv = speech["senderKey"] == archive_key;
-          let totalKey = speech["identifier"] + "," + speech["senderKey"];
-          this.speechCollection.set(totalKey, {
-            icon: "sentiment_very_satisfied",
-            identifier: speech["identifier"],
-            text: speech["content"],
-            contactID: archive_key,
-            isConfirmed: speech["signatureVerified"],
-            isSent: !wasRcv
-          });
-          this.make_good_speech();
-        } catch (err) {
-          return;
+        if(speech_blob.length > 1) {
+          try {
+            let speech = JSON.parse(speech_blob);
+            let wasRcv = speech["senderKey"] == archive_key;
+            let totalIdentifier = speech["identifier"];
+            let shortIdentifier = totalIdentifier.substr(0,4);
+            this.speechCollection.set(totalIdentifier, {
+              icon: "sentiment_very_satisfied",
+              totalIdentifier: totalIdentifier,
+              shortIdentifier: shortIdentifier,
+              text: speech["content"],
+              contactID: archive_key,
+              isConfirmed: speech["signatureVerified"],
+              isSent: !wasRcv
+            });
+          } catch (err) {
+            console.log("speech err "+err);
+          }
         }
+        this.make_good_speech();
       }
     );
     this.$electron.ipcRenderer.on(
@@ -208,6 +199,7 @@ export default {
         this.connect_icon = "signal_cellular_4_bar";
         this.connect_text = "Connected";
         this.isConnected = true;
+        this.doTick();
         this.rx("", primary, secondary);
       }
     );
@@ -227,7 +219,7 @@ export default {
         if (this.isConnected) {
           this.send("doTick", this.chatContactID);
         }
-      }, 3000);
+      }, 5000);
     },
     toggle_tick() {
       if (this.ticking == null) {
@@ -272,6 +264,8 @@ export default {
           this.speechObjects.push(obj);
         }
       }
+      let count = this.speechObjects.length;
+      console.log("make_good_speech for "+count);
     },
     connect_action() {
       this.showConnect = true;
@@ -284,12 +278,12 @@ export default {
       this.showContact = true;
       return;
     },
-    fakeget_action() {
-      this.send("doFakeGet", this.chatContactID);
+    fakespam_action() {
+      this.send("doFakeSpam", this.chatContactID);
       return;
     },
-    fakefill_action() {
-      this.send("doFakeFill");
+    fakecontact_action() {
+      this.send("doFakeReal", this.chatContactID);
       return;
     },
     do_keyfile(pubfile, prifile) {

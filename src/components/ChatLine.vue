@@ -1,7 +1,7 @@
 <template>
     <v-card height="100px" id="chatline">
         <v-icon>{{ speech.icon }}</v-icon>
-        {{ speech.identifier}}:
+        {{ speech.shortIdentifier }}:
         {{ speech.text }}
     </v-card>
 </template>
@@ -11,7 +11,8 @@ export default {
   props: {
     speech: {
       icon: String,
-      identifier: String,
+      shortIdentifier: String,
+      totalIdentifier: String,
       text: true,
       contactID: true,
       isConfirmed: true,

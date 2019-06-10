@@ -38,9 +38,7 @@ public class CoreMessageUtil {
         String encryptedAESKey = RSAEncryptUtil.encrypt(Base64.encodeBase64String(aesKey), recipientPublicKey);
         return new Message(encryptedBody, encryptedAESKey, hashOfLastMessage, date.getTime(), senderPublicKey);
     }
-
-    public static SendResponse sendMessage (PublicKey recipientPublicKey, PrivateKey senderPrivateKey,
-                                             Message message) throws
+    public static Envelope makeEnvelope (PublicKey recipientPublicKey, PrivateKey senderPrivateKey, Message message) throws
             NoSuchProviderException,
             NoSuchAlgorithmException,
             IOException,
@@ -48,7 +46,17 @@ public class CoreMessageUtil {
             SignatureException {
         Gson gson = new Gson();
         String proof = RSAEncryptUtil.sign(gson.toJson(message), senderPrivateKey);
-        Envelope envelope = new Envelope(message, proof, RSAEncryptUtil.getKeyAsString(recipientPublicKey));
+        return new Envelope(message, proof, RSAEncryptUtil.getKeyAsString(recipientPublicKey));
+    }
+
+    public static SendResponse sendEnvelope(Envelope envelope) throws
+            NoSuchProviderException,
+            NoSuchAlgorithmException,
+            IOException,
+            InvalidKeyException,
+            SignatureException {
+
+        Gson gson = new Gson();
         List<Envelope> list = new ArrayList<>();
         list.add(envelope);
 
@@ -87,15 +95,12 @@ public class CoreMessageUtil {
         Gson gson = new Gson();
         for (Envelope envelope : list) {
             Message message = envelope.getMessage();
-            System.out.println("message: ");
-            //System.out.println(message);
-            System.out.println("public key = " + message.getSenderPublicKey());
+            //System.out.println("message: ");
+            //System.out.println("public key = " + message.getSenderPublicKey());
             PublicKey senderPublicKey = RSAEncryptUtil.getPublicKeyFromString(message.getSenderPublicKey());
 
-            boolean verified = RSAEncryptUtil.verify(gson.toJson(message), envelope.getSignature(), senderPublicKey);
-//            if (verified) {
-//
-//            }
+            boolean signatureVerified = RSAEncryptUtil.verify(gson.toJson(message), envelope.getSignature(), senderPublicKey);
+
             List<Envelope> envelopes;
             if (publicKey2Envelope.containsKey(message.getSenderPublicKey())) {
                 envelopes = publicKey2Envelope.get(message.getSenderPublicKey());
@@ -110,25 +115,32 @@ public class CoreMessageUtil {
             }
 
             boolean hashMatched = expectedHash.equals(message.getHashOfLastMessage());
-//            if () {
-//
-//            }
+
             String aesKey = RSAEncryptUtil.decrypt(message.getEncryptedAESKey(), privateKey);
             String decryptedBody = AESEncryptUtil.decrypt(message.getBody(), Base64.decodeBase64(aesKey));
 
-            System.out.println(" body = " + decryptedBody);
-            System.out.println();
+            System.out.println("msg body = " + decryptedBody);
+            envelopes.add(envelope);
             String senderKeyString = message.getSenderPublicKey();
-            Speech senderSpeech = new Speech(0, senderKeyString, "", decryptedBody, message.getTime());
-            senderSpeech.Destination(envelope.getRecipientRSAPublicKey());
-            senderSpeech.Verify(hashMatched, verified); 
+            
+            String identifier = PasswordUtil.hash(envelope.toString());
+            String recipientKeyString = envelope.getRecipientRSAPublicKey();
+            Speech senderSpeech = new Speech(identifier, senderKeyString, recipientKeyString, 
+                decryptedBody, hashMatched, signatureVerified, message.getTime());
+
             if(!speechMap.containsKey(senderKeyString)) {
                 List<Speech> emptyList = new ArrayList<>();
                 speechMap.put(senderKeyString, emptyList);
             }
-            speechMap.get(senderKeyString).add(senderSpeech);
+            List<Speech> speechList = speechMap.get(senderKeyString);
+            for (Iterator<Speech> it = speechList.iterator(); it.hasNext(); ) { 
+                Speech s = it.next();
+                if (s.getIdentifier() == identifier) { 
+                    it.remove(); 
+                } 
+            }
+            speechList.add(senderSpeech);
 
-            envelopes.add(envelope);
         }
     }
 }

@@ -150,17 +150,17 @@ function connectToZmq() {
     let blob = makeJson('CRYPTOSend', valone, valtwo, d.getTime())
     zmqClient.send(blob)
   });
-  ipcMain.on('doFakeFill', () => {
-    let blob = makeJson('CRYPTOFakeFill',"fill","", d.getTime())
+  ipcMain.on('doFakeSpam', () => {
+    let blob = makeJson('CRYPTOFakeSpam',"","this is spam", d.getTime())
     zmqClient.send(blob)
   });
-  ipcMain.on('doFakeGet', (event, pubkey) => {
-    let blob = makeJson('CRYPTOFakeReceive',pubkey,"fake", d.getTime())
+  ipcMain.on('doFakeReal', (event, pubkey) => {
+    let blob = makeJson('CRYPTOFakeReceive',pubkey,"this is normal", d.getTime())
     zmqClient.send(blob)
   });
 
   ipcMain.on('doTick', (event, pubkey) => {
-    let blob = makeJson('CRYPTOTick',"","", d.getTime())
+    let blob = makeJson('CRYPTOTick',pubkey,"", d.getTime())
     zmqClient.send(blob)
   });
 

@@ -10,7 +10,7 @@
           <ChatLine 
           v-for="speech in speechObjects" 
           v-bind:class="{ 'confirm':speech.isConfirmed, 'fromSelf':speech.isSent }"
-          :key="speech.identifier" :speech="speech"/>
+          :key="speech.totalIdentifier" :speech="speech"/>
         </v-container>
       </div>
       <v-form>
@@ -47,7 +47,6 @@ export default {
   props: {
     contactName: String,
     contactID: String,
-    nextIdentifier: Number,
     speechObjects: Array
   },
   data: () => ({
