@@ -333,6 +333,8 @@ public class Core {
             }
             String hashOfLastMessage = lastHashes.get(destinationKeyString);
             Message message = CoreMessageUtil.makeMessage(recipient, sendText, hashOfLastMessage, publicKeyString);
+            String messageText = gson.toJson(message);
+            lastHashes.put(destinationKeyString, PasswordUtil.hash(messageText.toString()));
             envelope = CoreMessageUtil.makeEnvelope(recipient, privateKey, message);
             SendResponse sendResponse = CoreMessageUtil.sendEnvelope(envelope);
             if (sendResponse == null || !sendResponse.isSuccess()) {

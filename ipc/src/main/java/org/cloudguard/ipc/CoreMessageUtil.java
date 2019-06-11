@@ -109,12 +109,21 @@ public class CoreMessageUtil {
                 publicKey2Envelope.put(message.getSenderPublicKey(), envelopes);
             }
 
-            String expectedHash = PasswordUtil.hash("");
+            String expectedText = "";
             if (!envelopes.isEmpty()) {
-                expectedHash = PasswordUtil.hash(gson.toJson(envelopes.get(envelopes.size() - 1).getMessage()));
+                expectedText = gson.toJson(envelopes.get(envelopes.size() - 1).getMessage());
             }
+            
+            String expectedHash = PasswordUtil.hash(expectedText);
+            String actualHash = message.getHashOfLastMessage();
 
-            boolean hashMatched = expectedHash.equals(message.getHashOfLastMessage());
+            boolean hashMatched = expectedHash.equals(actualHash);
+            if(!hashMatched) {
+                System.out.println("Hashes:" + expectedHash+" "+actualHash);
+                System.out.println(",");
+                System.out.println("message hash does not match expected:" + expectedText);
+                System.out.println("----");
+            }
 
             String aesKey = RSAEncryptUtil.decrypt(message.getEncryptedAESKey(), privateKey);
             String decryptedBody = AESEncryptUtil.decrypt(message.getBody(), Base64.decodeBase64(aesKey));
