@@ -209,10 +209,12 @@ export default {
             let shortIdentifier = totalIdentifier.substr(0,4);
             var d = new Date(speech["time"]);
             let timeStamp = d.toLocaleString();
+            let timeNumber = d.getTime();
             this.speechCollection.set(totalIdentifier, {
               icon: "sentiment_very_satisfied",
               totalIdentifier: totalIdentifier,
               shortIdentifier: shortIdentifier,
+              timeNumber: timeNumber,
               timeStamp: timeStamp,
               text: speech["content"],
               contactID: archive_key,
@@ -305,6 +307,7 @@ export default {
           this.speechObjects.push(obj);
         }
       }
+      this.speechObjects.sort(function(a, b) { return a.timeNumber - b.timeNumber; })
     },
     connect_action() {
       this.showConnect = true;

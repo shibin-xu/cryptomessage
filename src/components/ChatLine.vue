@@ -4,7 +4,7 @@
       <v-flex grow xs-1>
         <v-card dark color="#444466">
           <v-icon>{{ speech.icon }}</v-icon>
-          {{speech.timeStamp}}
+          {{speech.timeNumber}}
         </v-card>
       </v-flex>
       <v-flex shrink xs-1>
@@ -24,6 +24,7 @@ export default {
   props: {
     speech: {
       icon: String,
+      timeNumber: Number,
       timeStamp:String,
       shortIdentifier: String,
       totalIdentifier: String,
