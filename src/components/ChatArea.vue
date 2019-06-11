@@ -17,13 +17,13 @@
       </div>
       <v-text-field
         v-model="blah"
-        append-outer-icon="send"
-        :prepend-icon="icon"
+        append-outer-icon='send'
+        :prepend-icon='icon'
         box
-        clear-icon="delete"
+        clear-icon='delete'
         clearable
-        label="Message"
-        type="text"
+        label='Message'
+        type='text'
         v-on:keyup.enter="sendMessage"
         @click:append-outer="sendMessage"
         @click:prepend="changeIcon"
@@ -34,7 +34,7 @@
 </template>
 
 <script>
-import ChatLine from "./ChatLine.vue";
+import ChatLine from './ChatLine.vue'
 export default {
   components: {
     ChatLine
@@ -45,58 +45,57 @@ export default {
     speechObjects: Array
   },
   data: () => ({
-    blah: "blah",
-    message: "Hey!",
+    blah: 'Hi',
     iconIndex: 0,
     icons: [
-      "sentiment_very_satisfied",
-      "sentiment_neutral",
-      "sentiment_very_dissatisfied"
+      'sentiment_very_satisfied',
+      'sentiment_neutral',
+      'sentiment_very_dissatisfied'
     ]
   }),
   updated() {
-    var elem = this.$refs.chatDiv;
-    elem.scrollTop = elem.scrollHeight;
+    var elem = this.$refs.chatDiv
+    elem.scrollTop = elem.scrollHeight
   },
   mounted: function() {
-    this.$refs.chatDiv.scrollTop = this.$refs.chatDiv.scrollHeight;
+    this.$refs.chatDiv.scrollTop = this.$refs.chatDiv.scrollHeight
   },
   computed: {
     icon() {
-      return this.icons[this.iconIndex];
+      return this.icons[this.iconIndex]
     },
     count() {
-      return this.speechObjects.length;
+      return this.speechObjects.length
     }
   },
   methods: {
     handleScroll: function(evt, el) {
       if (window.scrollY > 50) {
         el.setAttribute(
-          "style",
-          "opacity: 1; transform: translate3d(0, -10px, 0)"
-        );
+          'style',
+          'opacity: 1; transform: translate3d(0, -10px, 0)'
+        )
       }
-      return window.scrollY > 100;
+      return window.scrollY > 100
     },
     sendMessage() {
-      const trimmedText = this.blah.trim();
+      const trimmedText = this.blah.trim()
       if (trimmedText) {
-        this.$emit("transmit", trimmedText, this.contactID);
+        this.$emit('transmit', trimmedText, this.contactID)
       }
-      this.blah = "";
+      this.blah = ''
     },
     clearMessage() {
-      this.blah = "";
+      this.blah = ''
     },
     resetIcon() {
-      this.iconIndex = 0;
+      this.iconIndex = 0
     },
     changeIcon() {
       this.iconIndex === this.icons.length - 1
         ? (this.iconIndex = 0)
-        : this.iconIndex++;
+        : this.iconIndex++
     }
   }
-};
+}
 </script>

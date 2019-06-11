@@ -7,10 +7,11 @@
       </v-layout>
       <div ref="contacDiv" style=" background: #0F4D8E; overflow: auto; height:25vh; width: 65vw">
       <ContactFace
-        v-for="obj in contactObjects"
-        @talkface="clickedContact"
-        @changeface="clickedChange"
-        :obj="obj"
+        v-for='obj in contactObjects'
+        @talkface='clickedContact'
+        @changeface='clickedChange'
+        v-bind:key="obj.contactID"
+        :obj='obj'
       />
       </div>
       <v-list-tile @click="clickedAdd">
@@ -25,7 +26,7 @@
 </template>
 
 <script>
-import ContactFace from "./ContactFace.vue";
+import ContactFace from './ContactFace.vue'
 export default {
   components: {
     ContactFace
@@ -35,26 +36,26 @@ export default {
     selfKey: String
   },
   data: () => ({
-    contacts: "Contact List",
-    contacts_icon: "lightbulb_outline",
-    addIcon: "add",
-    addText: "Add Contact",
-    refreshIcon: "adjust",
-    refreshText: "Refresh Contact"
+    contacts: 'Contact List',
+    contacts_icon: 'lightbulb_outline',
+    addIcon: 'add',
+    addText: 'Add Contact',
+    refreshIcon: 'adjust',
+    refreshText: 'Refresh Contact'
   }),
   methods: {
     clickedContact(alias, id) {
-      this.$emit("talk", alias, id);
+      this.$emit('talk', alias, id)
     },
     clickedChange(alias, id) {
-      this.$emit("change", alias, id);
+      this.$emit('change', alias, id)
     },
     clickedAdd() {
-      this.$emit("open");
+      this.$emit('open')
     },
     clickedRefresh() {
-      this.$emit("refresh");
+      this.$emit('refresh')
     }
   }
-};
+}
 </script>

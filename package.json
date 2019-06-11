@@ -1,8 +1,8 @@
 {
-  "name": "msgrcrypto",
-  "productName": "msgrcrypto",
+  "name": "CryptoXT",
+  "productName": "CryptoXT",
   "version": "1.0.0",
-  "description": "My msgrcrypto",
+  "description": "Cryptography Messager from X, T",
   "main": "src/background.js",
   "scripts": {
     "start": "electron-forge start",
@@ -12,7 +12,7 @@
     "lint": "echo \"No linting configured\""
   },
   "keywords": [],
-  "author": "sheridan,jack",
+  "author": "sheridanTHIRSK,jackXU",
   "license": "ISC",
   "repository": {
     "type": "git",
@@ -51,17 +51,17 @@
         "prune": true
       },
       "electronWinstallerConfig": {
-        "name": "msgrcrypto"
+        "name": "CryptoXT"
       },
       "electronInstallerDebian": {},
       "electronInstallerRedhat": {},
       "github_repository": {
-        "owner": "",
-        "name": ""
+        "owner": "JACKxu",
+        "name": "JACKxu"
       },
       "windowsStoreConfig": {
-        "packageName": "",
-        "name": "msgrcrypto"
+        "packageName": "orgCryptoXT",
+        "name": "CryptoXT"
       }
     }
   },

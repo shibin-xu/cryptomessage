@@ -17,25 +17,25 @@
 export default {
   props: {
     obj: {
-      contactID: "abc",
-      alias: "Abc",
-      icon: "widgets"
+      contactID: 'abc',
+      alias: 'Abc',
+      icon: 'widgets'
     }
   },
   computed: {
     shortID() {
-      return "pubkey: " + this.obj.contactID.substr(44, 8);
+      return 'pubkey: ' + this.obj.contactID.substr(44, 8)
     }
   },
   methods: {
     clickedTalk() {
-      this.$emit("talkface", this.obj.alias, this.obj.contactID);
+      this.$emit('talkface', this.obj.alias, this.obj.contactID)
     },
 
     clickedChange() {
-      this.$emit("changeface", this.obj.alias, this.obj.contactID);
+      this.$emit('changeface', this.obj.alias, this.obj.contactID)
     }
   }
-};
+}
 </script>
 

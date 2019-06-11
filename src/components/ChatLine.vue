@@ -4,7 +4,7 @@
       <v-flex grow xs-1>
         <v-card dark color="#444466">
           <v-icon>{{ speech.icon }}</v-icon>
-          {{speech.timeNumber}}
+          {{speech.timeStamp}}
         </v-card>
       </v-flex>
       <v-flex shrink xs-1>
@@ -38,19 +38,19 @@ export default {
   computed: {
     previousVerified() {
       if (this.speech.isPreviousVerified) {
-        return "security";
+        return 'security'
       } else {
-        return "sms_failed";
+        return 'sms_failed'
       }
     },
     signatureVerified() {
       if (this.speech.isSignatureVerified) {
-        return "vpn_key";
+        return 'vpn_key'
       } else {
-        return "warning";
+        return 'warning'
       }
     }
   }
-};
+}
 </script>
 

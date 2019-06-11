@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import ConsoleLine from "./ConsoleLine.vue";
+import ConsoleLine from './ConsoleLine.vue'
 export default {
   components: {
     ConsoleLine
@@ -27,8 +27,8 @@ export default {
     consoleLines: Array
   },
   updated(){              
-    var elem = this.$refs.conDiv;
-    elem.scrollTop = elem.scrollHeight;
+    var elem = this.$refs.conDiv
+    elem.scrollTop = elem.scrollHeight
   },
-};
+}
 </script>

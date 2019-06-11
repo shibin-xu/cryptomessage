@@ -1,32 +1,31 @@
 <template>
-  <div style="position: absolute; z-index:1000; width:350px; top:20px; left: 50%; ">
-    <div style="position: absolute; width:350px; left:-50%">
-      <v-card v-if="shouldRender">
-        <v-card-title class="title font-weight-regular justify-space-between">
+  <div style='position: absolute; z-index:1000; width:350px; top:20px; left: 50%; '>
+    <div style='position: absolute; width:350px; left:-50%'>
+      <v-card v-if='shouldRender'>
+        <v-card-title class='title font-weight-regular justify-space-between'>
           <span>{{ currentTitle }}</span>
           <v-avatar
-            color="primary lighten-2"
-            class="subheading white--text"
-            size="24"
-            v-text="step"
+            color='primary lighten-2'
+            class='subheading white--text'
+            size='24'
           ></v-avatar>
         </v-card-title>
 
         <v-window>
-          <v-window-item :value="1">
+          <v-window-item :value='1'>
             <v-card-text>
-              <span class="caption grey--text text--darken-1">File: {{dataFilename}}</span>
+              <span class='caption grey--text text--darken-1'>File: {{dataFilename}}</span>
               <div>
-                <v-btn color="generate" v-on:click="createData">Create File</v-btn>
-                <label for="data-file-upload" class="custom-button">Find File</label>
+                <v-btn color='generate' v-on:click='createData'>Create File</v-btn>
+                <label for='data-file-upload' class='custom-button'>Find File</label>
                 <input
-                  id="data-file-upload"
-                  type="file"
-                  prepend-icon="attach_file"
-                  :accept="acceptData"
-                  :multiple="false"
-                  style="background-color: yellow;"
-                  @change="onDataFileChange"
+                  id='data-file-upload'
+                  type='file'
+                  prepend-icon='attach_file'
+                  :accept='acceptData'
+                  :multiple='false'
+                  style='background-color: yellow;'
+                  @change='onDataFileChange'
                 >
               </div>
             </v-card-text>
@@ -36,99 +35,98 @@
         <v-divider></v-divider>
 
         <v-card-actions>
-          <v-btn :disabled="block_back" flat @click="back">Back</v-btn>
+          <v-btn :disabled='block_back' flat @click='back'>Back</v-btn>
           <v-spacer></v-spacer>
-          <v-btn :disabled="block_next" color="primary" depressed @click="save">Save</v-btn>
-          <v-btn :disabled="block_next" color="secondary" depressed @click="load">Load</v-btn>
+          <v-btn :disabled='block_next' color='primary' depressed @click='save'>Save</v-btn>
+          <v-btn :disabled='block_next' color='secondary' depressed @click='load'>Load</v-btn>
         </v-card-actions>
       </v-card>
     </div>
   </div>
 </template>
 <script>
-const { dialog, app } = require("electron").remote;
-var fs = require("fs");
+const { dialog } = require('electron').remote
+var fs = require('fs')
 export default {
-  props: ["shouldRender"],
+  props: ['shouldRender'],
   data() {
     return {
-      dataFilename: "",
-      acceptData: ".dat",
+      dataFilename: '',
+      acceptData: '.dat',
       rules: {
-        required: value => !!value || "Required.",
-        min: v => v.length >= 8 || "Min 8 characters"
+        required: value => !!value || 'Required.',
+        min: v => v.length >= 8 || 'Min 8 characters'
       }
-    };
+    }
   },
   computed: {
     currentTitle() {
-      return "Save / Load";
+      return 'Save / Load'
     },
     block_back: function() {
-      return false;
+      return false
     },
     block_next: function() {
-      return this.dataFilename.length == 0;
+      return this.dataFilename.length == 0
     }
   },
   methods: {
     createData: function() {
       const options = {
-        defaultPath: "./messagedata.dat"
-      };
-      dialog.showSaveDialog(null, options, this.writeData);
+        defaultPath: './messagedata.dat'
+      }
+      dialog.showSaveDialog(null, options, this.writeData)
     },
     writeData: function(path) {
-      console.log("writeData " + path);
+      console.log('writeData ' + path)
       if (path && path.length > 0) {
         try {
-          let buffer = new Buffer("abc", "utf8");
-          let fd = fs.openSync(path, "w");
-          fs.writeSync(fd, buffer, 0, buffer.length);
-          fs.close(fd);
-          this.dataFilename = path;
+          let buffer = new Buffer('abc', 'utf8')
+          let fd = fs.openSync(path, 'w')
+          fs.writeSync(fd, buffer, 0, buffer.length)
+          fs.close(fd)
+          this.dataFilename = path
         } catch (e) {
-          console.log("fail " + e);
+          console.log('fail ' + e)
         }
       }
     },
     getFormData(files) {
       const data = new FormData();
       [...files].forEach(file => {
-        data.append("data", file, file.name); // currently only one file at a time
-      });
-      return data;
+        data.append('data', file, file.name) // currently only one file at a time
+      })
+      return data
     },
     onDataFileChange($event) {
-      const files = $event.target.files || $event.dataTransfer.files;
+      const files = $event.target.files || $event.dataTransfer.files
 
-      const form = this.getFormData(files);
       if (files) {
         if (files.length > 0) {
-          this.dataFilename = [...files].map(file => file.name).join(", ");
+          this.dataFilename = [...files].map(file => file.name).join(', ')
         } else {
-          this.dataFilename = null;
+          this.dataFilename = null
         }
       } else {
-        this.dataFilename = $event.target.value.split("\\").pop();
+        this.dataFilename = $event.target.value.split('\\').pop()
       }
-      console.log("data file " + this.dataFilename);
+      console.log('data file ' + this.dataFilename)
     },
     back: function() {
-      this.$emit("load", "");
+      this.$emit('load', '')
     },
     save: function() {
-      this.$emit("save", this.dataFilename);
+      this.$emit('save', this.dataFilename)
     },
     load: function() {
-      this.$emit("load", this.dataFilename);
+      this.$emit('load', this.dataFilename)
     }
   }
-};
+}
 </script>
 
 <style>
-input[type="file"] {
+input[type='file'] {
   display: none;
 }
 .custom-button {
