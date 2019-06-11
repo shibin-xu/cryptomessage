@@ -93,7 +93,8 @@ public class CoreMessageUtil {
             SignatureException {
         Gson gson = new Gson();
         ArrayList<Speech> outBuffer = new ArrayList<Speech>();
-        for (Envelope envelope : list) {
+        for(int i=0; i<list.size(); ++i) {
+            Envelope envelope = list.get(i);
             Message message = envelope.getMessage();
             //System.out.println("message: ");
             //System.out.println("public key = " + message.getSenderPublicKey());
@@ -110,8 +111,8 @@ public class CoreMessageUtil {
             }
 
             String expectedText = "";
-            if (!envelopes.isEmpty()) {
-                expectedText = gson.toJson(envelopes.get(envelopes.size() - 1).getMessage());
+            if (i > 0) {
+                expectedText = gson.toJson(envelopes.get(i - 1).getMessage());
             }
             
             String expectedHash = PasswordUtil.hash(expectedText);
