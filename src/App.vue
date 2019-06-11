@@ -34,6 +34,14 @@
           :selfKey="selfContactShort"
           :contactObjects="contactObjects"
         />
+        <v-list-tile @click="saveload_action">
+          <v-list-tile-action>
+            <v-icon>save</v-icon>
+          </v-list-tile-action>
+          <v-list-tile-content>
+            <v-list-tile-title>Save / Load</v-list-tile-title>
+          </v-list-tile-content>
+        </v-list-tile>
         <v-list-tile @click="settings_action">
           <v-list-tile-action>
             <v-icon>{{ settings_icon }}</v-icon>
@@ -65,6 +73,9 @@
         <v-layout align-center justify-top column>
           <v-flex>
             <ConnectDialog :shouldRender="showConnect" @keyfile="do_keyfile"/>
+          </v-flex>
+          <v-flex>
+            <SaveLoadDialog :shouldRender="showSaveLoad" @save="do_save" @load="do_load"/>
           </v-flex>
           <v-flex>
             <AddContactDialog
@@ -103,6 +114,7 @@
 
 <script>
 import ConnectDialog from "./components/ConnectDialog.vue";
+import SaveLoadDialog from "./components/SaveLoadDialog.vue";
 import AddContactDialog from "./components/AddContactDialog.vue";
 import ChangeContactDialog from "./components/ChangeContactDialog.vue";
 import Contact from "./components/Contact.vue";
@@ -111,6 +123,7 @@ import Console from "./components/Console.vue";
 export default {
   components: {
     ConnectDialog,
+    SaveLoadDialog,
     AddContactDialog,
     ChangeContactDialog,
     Contact,
@@ -128,6 +141,7 @@ export default {
     isConnected: false,
     isConsoleEnabled: false,
     showConnect: true,
+    showSaveLoad: false,
     showAdd: false,
     showChange: false,
     settings: "Console",
@@ -299,6 +313,9 @@ export default {
     settings_action() {
       this.isConsoleEnabled = !this.isConsoleEnabled;
     },
+    saveload_action() {
+      this.showSaveLoad = true;
+    },
     contact_action() {
       console.log("contact_action");
       this.showAdd = true;
@@ -370,6 +387,18 @@ export default {
     },
     do_send(words, secondary) {
       this.send("doSend", words, secondary);
+    },
+    do_save(savefile) {
+      if (savefile.length > 0) {
+        this.send("doSave", savefile);
+      }
+      this.showSaveLoad = false;
+    },
+    do_load(loadfile) {
+      if (loadfile.length > 0) {
+        this.send("doLoad", loadfile);
+      }
+      this.showSaveLoad = false;
     }
   }
 };

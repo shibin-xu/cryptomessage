@@ -1,6 +1,7 @@
 package org.cloudguard.ipc;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.cloudguard.commons.*;
 import org.cloudguard.crypto.CryptoUtil;
 import org.cloudguard.crypto.PasswordUtil;
@@ -291,7 +292,35 @@ public class Core {
             return;
         }
     }
-
+    private void Save(String saveFilePath) {
+        Blob blob = new Blob(contacts, lastHashes, envelopeMap, speechMap);
+        Gson gsonBuild = new GsonBuilder().setPrettyPrinting().create();
+        String serialized = gsonBuild.toJson(blob);
+        try {
+            CoreSaveLoadUtil.SaveToFile(saveFilePath, serialized);
+            SendRelay(zsocket, RelayType.UIResultForSaveLoad, "True", "False", date);
+        } catch (Exception e) {
+            System.out.println("Failed save = " + e);
+            SendRelay(zsocket, RelayType.UIResultForSaveLoad, "False", "False", this.date);
+            return;
+        } 
+    }
+    private void Load(String loadFilePath) {
+        try {
+            String serialized = CoreSaveLoadUtil.LoadFromFile(loadFilePath);
+            Blob blob = gson.fromJson(serialized, Blob.class);
+            contacts = blob.getContacts();
+            lastHashes = blob.getLastHashes();
+            envelopeMap = blob.getEnvelopeMap();
+            speechMap = blob.getSpeechMap();
+            SendRelay(zsocket, RelayType.UIResultForSaveLoad, "False", "True", date);
+        } catch (Exception e) {
+            System.out.println("Failed save = " + e);
+            SendRelay(zsocket, RelayType.UIResultForSaveLoad, "False", "False", this.date);
+            return;
+        } 
+    }
+        
     private void SendSpeech(String sendText, String destinationKeyString) {
         
         String publicKeyString = getKeyAsString(publicKey);
@@ -386,6 +415,12 @@ public class Core {
                     break;
                 case CRYPTOSend:
                     SendSpeech(inputRelay.getPrimaryData(), inputRelay.getSecondaryData());
+                    break;
+                case CRYPTOSave:
+                    Save(inputRelay.getPrimaryData());
+                    break;
+                case CRYPTOLoad:
+                    Load(inputRelay.getPrimaryData());
                     break;
                 case CRYPTOFakeSpam:
                     {

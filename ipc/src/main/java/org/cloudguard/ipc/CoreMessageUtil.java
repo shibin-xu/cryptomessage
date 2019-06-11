@@ -124,7 +124,7 @@ public class CoreMessageUtil {
             String senderKeyString = message.getSenderPublicKey();
             
             String alias = senderKeyString.substring(44,54);
-            System.out.println("msg = " + decryptedBody+" hashMatched "+hashMatched+" alias "+alias);
+            //System.out.println("msg = " + decryptedBody+" hashMatched "+hashMatched+" alias "+alias);
 
             String identifier = PasswordUtil.hash(envelope.toString());
             String recipientKeyString = envelope.getRecipientRSAPublicKey();

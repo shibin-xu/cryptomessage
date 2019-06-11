@@ -150,6 +150,14 @@ function connectToZmq() {
     let blob = makeJson('CRYPTOSend', valone, valtwo, d.getTime())
     zmqClient.send(blob)
   });
+  ipcMain.on('doSave', (event, valone, valtwo) => {
+    let blob = makeJson('CRYPTOSave', valone, "", d.getTime())
+    zmqClient.send(blob)
+  });
+  ipcMain.on('doLoad', (event, valone, valtwo) => {
+    let blob = makeJson('CRYPTOLoad', valone, "", d.getTime())
+    zmqClient.send(blob)
+  });
   ipcMain.on('doFakeSpam', () => {
     let blob = makeJson('CRYPTOFakeSpam',"","This is spam", d.getTime())
     zmqClient.send(blob)

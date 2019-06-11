@@ -28,6 +28,10 @@ public enum RelayType {
 
     CRYPTOSend,
 
+    CRYPTOSave,
+    CRYPTOLoad,
+    UIResultForSaveLoad,
+
     CRYPTOFakeSpam,
     CRYPTOFakeReceive,
 
