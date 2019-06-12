@@ -14,6 +14,11 @@ Enter `tmux` <br />
 Save URL (e.g. ec2-***-***.compute.amazonaws.com/CloudGuard.zip) <br />
 Exit `tmux` <br />
 
+## Launch osx binaries
+`cd bin-osx`
+`./RUN`
+
+
 ## Getting Started
 
 install zmq 4.0.4

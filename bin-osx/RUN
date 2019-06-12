@@ -1,0 +1,5 @@
+
+echo " ------- launching javascript  ------------"
+open ./CryptoXT.app/
+echo " ------- launching java  ------------"
+java -cp ipc/target/ipc-1.0-SNAPSHOT.jar org.cloudguard.ipc.Main

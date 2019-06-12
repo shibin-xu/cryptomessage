@@ -1,0 +1,45 @@
+{
+  "name": "CryptoXT",
+  "productName": "CryptoXT",
+  "version": "1.0.0",
+  "description": "Cryptography Messager from X, T",
+  "main": "es6-shim.js",
+  "scripts": {
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make",
+    "publish": "electron-forge publish",
+    "lint": "echo \"No linting configured\""
+  },
+  "keywords": [],
+  "author": "sheridanTHIRSK,jackXU",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shibix/cryptomessage.git"
+  },
+  "bugs": {
+    "url": "https://github.com/shibix/cryptomessage/issues"
+  },
+  "homepage": "https://github.com/shibix/cryptomessage#readme",
+  "config": {},
+  "dependencies": {
+    "electron": "2.0.16",
+    "electron-compile": "^6.4.4",
+    "electron-devtools-installer": "^2.1.0",
+    "electron-squirrel-startup": "^1.0.0",
+    "vue": "^2.6.10",
+    "vue-electron": "^1.0.6",
+    "vueify": "^9.4.1",
+    "vuetify": "^1.5.14",
+    "zeromq": "^5.1.0"
+  },
+  "devDependencies": {
+    "babel-plugin-transform-async-to-generator": "^6.24.1",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-react": "^6.24.1",
+    "electron-forge": "^5.2.4",
+    "electron-prebuilt-compile": "2.0.16"
+  },
+  "originalMain": "src/background.js"
+}
