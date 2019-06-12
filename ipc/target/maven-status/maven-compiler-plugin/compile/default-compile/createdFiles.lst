@@ -1,0 +1,10 @@
+org\cloudguard\ipc\CoreSaveLoadUtil.class
+org\cloudguard\ipc\Blob.class
+org\cloudguard\ipc\Main.class
+org\cloudguard\ipc\Speech.class
+org\cloudguard\ipc\CoreKeyUtil.class
+org\cloudguard\ipc\CoreMessageUtil.class
+org\cloudguard\ipc\RelayType.class
+org\cloudguard\ipc\Core.class
+org\cloudguard\ipc\Core$1.class
+org\cloudguard\ipc\Relay.class

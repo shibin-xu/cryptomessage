@@ -18,6 +18,9 @@ Exit `tmux` <br />
 `cd bin-osx`
 `./RUN`
 
+## Launch win binaries
+`cd bin-win`
+`CryptoXT.exe`
 
 ## Getting Started
 

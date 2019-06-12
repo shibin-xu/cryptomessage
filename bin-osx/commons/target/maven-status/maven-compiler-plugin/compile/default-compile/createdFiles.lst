@@ -1,0 +1,16 @@
+org\cloudguard\commons\Envelope.class
+org\cloudguard\commons\SendResponse.class
+org\cloudguard\commons\UsernameSanitizer.class
+org\cloudguard\commons\LoginPrepareResponse.class
+org\cloudguard\commons\LoginFinishRequest.class
+org\cloudguard\commons\LoginRequest.class
+org\cloudguard\commons\RegisterRequest.class
+org\cloudguard\commons\SendRequest.class
+org\cloudguard\commons\LoginPrepareRequest.class
+org\cloudguard\commons\LoginFinishResponse.class
+org\cloudguard\commons\GetResponse.class
+org\cloudguard\commons\Request.class
+org\cloudguard\commons\Message.class
+org\cloudguard\commons\Response.class
+org\cloudguard\commons\ClientUtil.class
+org\cloudguard\commons\GetRequest.class
