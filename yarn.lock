@@ -3212,9 +3212,9 @@ homedir-polyfill@^1.0.1:
     parse-passwd "^1.0.0"
 
 hosted-git-info@^2.1.4:
-  version "2.7.1"
-  resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.7.1.tgz#97f236977bd6e125408930ff6de3eec6281ec047"
-  integrity sha512-7T/BxH19zbcCTa8XkMlbK5lTo1WtgkFi3GvdWEyNuc4Vex7/9Dqbnpsf4JMydcfj9HCg4zUWFTL3Za6lapg5/w==
+  version "2.8.9"
+  resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.8.9.tgz#dffc0bf9a21c02209090f2aa69429e1414daf3f9"
+  integrity sha512-mxIDAb9Lsm6DoOJ7xH+5+X4y1LU/4Hi50L9C5sIswK3JzULS4bwk1FvjdBgvYR4bzT4tuUQiC15FE2f5HbLvYw==
 
 html-comment-regex@^1.1.0:
   version "1.1.2"
@@ -6407,11 +6407,6 @@ vue-hot-reload-api@^2.0.1:
   version "2.3.3"
   resolved "https://registry.yarnpkg.com/vue-hot-reload-api/-/vue-hot-reload-api-2.3.3.tgz#2756f46cb3258054c5f4723de8ae7e87302a1ccf"
   integrity sha512-KmvZVtmM26BQOMK1rwUZsrqxEGeKiYSZGA7SNWE6uExx8UX/cj9hq2MRV/wWC3Cq6AoeDGk57rL9YMFRel/q+g==
-
-vue-material@1.0.0-beta-11:
-  version "1.0.0-beta-11"
-  resolved "https://registry.yarnpkg.com/vue-material/-/vue-material-1.0.0-beta-11.tgz#11baf0cdb22a35d35859c619099d6c3cb3cc2cc3"
-  integrity sha512-1+dIVkQafMIA/zNONb7OwGaTjAxaWk/JhUA2/FInQvbArxf1ToKB+yIdeSfzopQ1KICnBTAmk9E0Vdr5p4MWNA==
 
 vue-template-compiler@^2.0.0-alpha.8:
   version "2.6.10"
