@@ -24,7 +24,7 @@
   "homepage": "https://github.com/shibix/cryptomessage#readme",
   "config": {},
   "dependencies": {
-    "electron": "2.0.16",
+    "electron": "13.6.6",
     "electron-compile": "^6.4.4",
     "electron-devtools-installer": "^2.1.0",
     "electron-squirrel-startup": "^1.0.0",
